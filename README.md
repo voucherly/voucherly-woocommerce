@@ -1,4 +1,6 @@
 # Voucherly x Wordpress (WooCommerce)
 
 
-The official [Voucherly][https://voucherly.it] Wordpress (WooCommerce) plugin.
+The official [Voucherly][voucherly] Wordpress (WooCommerce) plugin.
+
+[voucherly]: https://voucherly.it
