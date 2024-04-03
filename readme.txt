@@ -1,6 +1,6 @@
 === Voucherly ===
 Contributors: voucherly
-Tags: woocommerce, voucherly, buoni pasto, edenred, sodexo, pluxee, pellegrini, upday, yesticket
+Tags: woocommerce, voucherly, buoni pasto, edenred, pellegrini
 Requires at least: 5.0
 Tested up to: 6.5.0
 Stable tag: 1.0.0

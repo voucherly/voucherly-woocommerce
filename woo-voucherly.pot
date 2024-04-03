@@ -1,0 +1,105 @@
+# Copyright (C) 2024 Voucherly
+# This file is distributed under the same license as the Voucherly WooCommerce plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: Voucherly WooCommerce 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/woo-voucherly\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2024-04-03T18:24:59+02:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.10.0\n"
+"X-Domain: woo-voucherly\n"
+
+#. Plugin Name of the plugin
+#: D:\source\voucherly\voucherly-woocommerce\woo-voucherly.php
+msgid "Voucherly WooCommerce"
+msgstr ""
+
+#. Description of the plugin
+#: D:\source\voucherly\voucherly-woocommerce\woo-voucherly.php
+msgid "Accetta pagamenti tramite buoni pasto per il tuo ecommerce. Non perdere neanche una vendita, incassa online in totale sicurezza e in qualsiasi modalità. Il modo migliore per usare i buoni pasto!"
+msgstr ""
+
+#. Author of the plugin
+#: D:\source\voucherly\voucherly-woocommerce\woo-voucherly.php
+msgid "Voucherly"
+msgstr ""
+
+#. Author URI of the plugin
+#: D:\source\voucherly\voucherly-woocommerce\woo-voucherly.php
+msgid "https://voucherly.it/"
+msgstr ""
+
+#: wc-voucherly.php:48
+msgid "Enable/Disable"
+msgstr ""
+
+#: wc-voucherly.php:50
+msgid "Enable Voucherly"
+msgstr ""
+
+#: wc-voucherly.php:54
+msgid "API key live"
+msgstr ""
+
+#. translators: %s is replaced with Voucherly Dashboard link
+#: wc-voucherly.php:57
+#: wc-voucherly.php:63
+msgid "Locate API key in developer section on <a href=\"%s\" target=\"_blank\">Voucherly Dashboard</a>."
+msgstr ""
+
+#: wc-voucherly.php:60
+msgid "API key sand"
+msgstr ""
+
+#: wc-voucherly.php:66
+msgid "Sandbox"
+msgstr ""
+
+#: wc-voucherly.php:67
+msgid "Sandbox Mode"
+msgstr ""
+
+#: wc-voucherly.php:73
+msgid "Finalize unhandled payments"
+msgstr ""
+
+#: wc-voucherly.php:74
+msgid "Enable cron"
+msgstr ""
+
+#: wc-voucherly.php:77
+msgid "Finalize unhandled Voucherly payments with a cron."
+msgstr ""
+
+#: wc-voucherly.php:80
+#: wc-voucherly.php:81
+msgid "Finalize pending payments up to"
+msgstr ""
+
+#: wc-voucherly.php:84
+msgid "Choose a number of hours, default is four and minimum is two."
+msgstr ""
+
+#. translators: %s is replaced with Voucherly Dashboard link
+#: wc-voucherly.php:203
+msgid "Voucherly is not correctly configured, get an API key in developer section on <a href=\"%s\" target=\"_blank\">Voucherly Dashboard</a>."
+msgstr ""
+
+#. translators: %s is replaced with form label (API key)
+#: wc-voucherly.php:253
+msgid "The \"%s\" is invalid"
+msgstr ""
+
+#. translators: %s is replaced with form label (API key)
+#: wc-voucherly.php:270
+msgid "An error occurred for \"%s\""
+msgstr ""
+
+#: woo-voucherly.php:52
+msgid "Settings"
+msgstr ""

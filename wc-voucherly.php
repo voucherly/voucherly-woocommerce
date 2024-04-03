@@ -53,11 +53,13 @@ class WC_Voucherly extends WC_Payment_Gateway
       'apiKey-live' => array(
         'title' => __('API key live', 'woo-voucherly'),
         'type' => 'text',
+        /* translators: %s is replaced with Voucherly Dashboard link */
         'description' => sprintf(__('Locate API key in developer section on <a href="%s" target="_blank">Voucherly Dashboard</a>.', 'woo-voucherly'), 'https://dashboard.voucherly.it')
       ),
       'apiKey-sand' => array(
         'title' => __('API key sand', 'woo-voucherly'),
         'type' => 'text',
+        /* translators: %s is replaced with Voucherly Dashboard link */
         'description' => sprintf(__('Locate API key in developer section on <a href="%s" target="_blank">Voucherly Dashboard</a>.', 'woo-voucherly'), 'https://dashboard.voucherly.it')
       ),
       'sandbox' => array(
@@ -181,7 +183,7 @@ class WC_Voucherly extends WC_Payment_Gateway
 
         header('Content-Type: application/json');
         exit(
-          json_encode(
+          wp_json_encode(
             array(
               'isSuccess' => true,
               'orderId' => $orderId
@@ -197,6 +199,7 @@ class WC_Voucherly extends WC_Payment_Gateway
     $ok = \VoucherlyApi\Api::testAuthentication();
     if (!$ok) {
       echo '<div class="notice-error notice">';
+      /* translators: %s is replaced with Voucherly Dashboard link */
       echo '<p>' . sprintf(__('Voucherly is not correctly configured, get an API key in developer section on <a href="%s" target="_blank">Voucherly Dashboard</a>.', 'woo-voucherly'), 'https://dashboard.voucherly.com') . '</p>';
       echo '</div>';
     }
@@ -231,6 +234,7 @@ class WC_Voucherly extends WC_Payment_Gateway
     $postData = $this->get_post_data();
 
     $optionKey = 'apiKey-' . $environment;
+    $textKey = 'API key ' . $environment;
 
     $apiKey = $this->get_option($optionKey);
     $newApiKey = $postData['woocommerce_voucherly_' . $optionKey];
@@ -245,7 +249,8 @@ class WC_Voucherly extends WC_Payment_Gateway
       $ok = \VoucherlyApi\Api::testAuthentication($newApiKey);
       if (!$ok) {
         echo '<div class="notice-error notice">';
-        echo '<p>' . sprintf(__('The "%s" is invalid', 'woo-voucherly'), __('API key ' . $environment, 'woo-voucherly')) . '</p>';
+        /* translators: %s is replaced with form label (API key) */
+        echo '<p>' . sprintf(__('The "%s" is invalid', 'woo-voucherly'), __($textKey, 'woo-voucherly')) . '</p>';
         echo '</div>';
 
         return false;
@@ -261,7 +266,8 @@ class WC_Voucherly extends WC_Payment_Gateway
 
     } catch (\Exception $ex) {
       echo '<div class="notice-error notice">';
-      echo '<p>' . sprintf(__('The "%s" is exception', 'woo-voucherly'), __('API key ' . $environment, 'woo-voucherly')) . '</p>';
+      /* translators: %s is replaced with form label (API key) */
+      echo '<p>' . sprintf(__('An error occurred for "%s"', 'woo-voucherly'), __($textKey, 'woo-voucherly')) . '</p>';
       echo '</div>';
 
       return false;
