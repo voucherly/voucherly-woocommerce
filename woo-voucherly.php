@@ -8,11 +8,8 @@
  * WC tested up to: 8.6.1
  */
 
-use Voucherly\Plugin\Constants;
-
 define("CACHE_BUSTER", time() );
 require_once('vendor/autoload.php');
-require_once(Constants::PLUGIN_FOLDER_PATH.'includes/ui/admin.php');
 
 add_action( 'before_woocommerce_init', function() {
     if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
@@ -41,7 +38,7 @@ function wc_voucherly_init() {
         if ( class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType') ) {
             require_once 'includes/blocks/wc-voucherly-blocks.php';
             add_action(
-                'woocommerce_blocks_payment_method_type_registration',
+                'woocomerce_blocks_payment_method_type_registration',
                 function( Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry ) {
                     $payment_method_registry->register( new WC_Voucherly_Blocks );
                 }

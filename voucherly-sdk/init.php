@@ -29,7 +29,6 @@ require_once(dirname(__FILE__) . "/lib/NotSuccessException.php");
 require_once(dirname(__FILE__) . "/lib/Request.php");
 
 require_once(dirname(__FILE__) . "/lib/Payment/Payment.php");
-require_once(dirname(__FILE__) . "/lib/Payment/PaymentResponse.php");
 require_once(dirname(__FILE__) . "/lib/Payment/CreatePayment/CreatePaymentRequest.php");
 require_once(dirname(__FILE__) . "/lib/Payment/CreatePayment/CreatePaymentRequestDiscount.php");
 require_once(dirname(__FILE__) . "/lib/Payment/CreatePayment/CreatePaymentRequestLine.php");

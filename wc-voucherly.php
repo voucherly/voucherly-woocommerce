@@ -1,9 +1,5 @@
 <?php
 
-use Voucherly\Plugin\AdminSettings;
-use Voucherly\Plugin\Constants;
-use Voucherly\Woocommerce\Category;
-
 require_once (__DIR__ . '/voucherly-sdk/init.php');
 
 class WC_Voucherly extends WC_Payment_Gateway
@@ -481,8 +477,6 @@ class WC_Voucherly extends WC_Payment_Gateway
 
     $cart_items = WC()->cart->get_cart();
 
-    $categoryHelper = Category::getInstance();
-
     foreach ($cart_items as $key => $item) {
 
       $product = wc_get_product($item['product_id']);
@@ -496,6 +490,11 @@ class WC_Voucherly extends WC_Payment_Gateway
       }
       $line->quantity = $item['quantity'];
       $line->isFood = true;
+
+      // return get_terms(array(
+      //   'taxonomy' => 'product_cat',
+      //   'hide_empty' => $hide_empty
+      // ));
 
       // foreach ($product->get_category_ids() as $category_id) {
 

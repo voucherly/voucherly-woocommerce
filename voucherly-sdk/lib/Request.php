@@ -2,8 +2,6 @@
 
 namespace VoucherlyApi;
 
-use Voucherly\Plugin\Constants;
-
 class Request
 {
 
