@@ -45,24 +45,6 @@ $settings = $admin_settings->loadSettings();
       </label>
       <input type="text" name="api_key_sand" class="form-control" value="<?php echo $settings[Constants::DOMAIN.'_'.Constants::API_KEY_SAND] ?? ''; ?>">
     </div>
-    <div class="col-lg-6 col-12 mb-3 d-none">
-      <label>
-        <?php echo __('Url plugin prod',Constants::DOMAIN); ?>
-      </label>
-      <input type="text" name="url_plugin_prod" class="form-control" value="<?php echo Constants::API_URL; ?>" disabled>
-    </div>
-    <div class="col-12 mb-3 d-none">
-      <label>
-        <?php echo __('Chiave segreta web service WooCommerce',Constants::DOMAIN); ?>
-      </label>
-      <input type="text" name="ws_key_secret" class="form-control" value="<?php echo $settings[Constants::DOMAIN.'_'.Constants::WS_KEY_SECRET] ?? ''; ?>">
-    </div>
-    <div class="col-12 mb-3 d-none">
-      <label>
-        <?php echo __('Chiave client web service WooCommerce',Constants::DOMAIN); ?>
-      </label>
-      <input type="text" name="ws_key" class="form-control" value="<?php echo $settings[Constants::DOMAIN.'_'.Constants::WS_KEY] ?? ''; ?>">
-    </div>
     <?php
       include_once(__DIR__.'/includes/mapping_is_food.php');
     ?>

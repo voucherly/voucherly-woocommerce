@@ -3,4 +3,4 @@
  * Admin menu
  */
 
-add_action('admin_menu',array('Voucherly\Plugin\Admin\AdminMenu','addMenu'));
+// add_action('admin_menu',array('Voucherly\Plugin\Admin\AdminMenu','addMenu'));

@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6ea4cdc6048c9d5624f9e73e7fec3351",
+    "content-hash": "037655c05dd14ba11d7089e693a31d86",
     "packages": [
         {
             "name": "analog/analog",
-            "version": "1.0.19-stable",
+            "version": "1.0.20-stable",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jbroadway/analog.git",
-                "reference": "53afd53b77bf911d926e5b895484a3fed3479aee"
+                "reference": "c0e16a986f5fbdd0b80372735d2b7be495f754d7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jbroadway/analog/zipball/53afd53b77bf911d926e5b895484a3fed3479aee",
-                "reference": "53afd53b77bf911d926e5b895484a3fed3479aee",
+                "url": "https://api.github.com/repos/jbroadway/analog/zipball/c0e16a986f5fbdd0b80372735d2b7be495f754d7",
+                "reference": "c0e16a986f5fbdd0b80372735d2b7be495f754d7",
                 "shasum": ""
             },
             "require": {
@@ -71,9 +71,9 @@
             ],
             "support": {
                 "issues": "https://github.com/jbroadway/analog/issues",
-                "source": "https://github.com/jbroadway/analog/tree/1.0.19-stable"
+                "source": "https://github.com/jbroadway/analog/tree/1.0.20-stable"
             },
-            "time": "2021-11-05T03:59:12+00:00"
+            "time": "2023-11-02T02:07:02+00:00"
         },
         {
             "name": "psr/log",
@@ -134,5 +134,5 @@
     "prefer-lowest": false,
     "platform": [],
     "platform-dev": [],
-    "plugin-api-version": "2.3.0"
+    "plugin-api-version": "2.6.0"
 }

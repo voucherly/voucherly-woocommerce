@@ -10,22 +10,32 @@ class Request
   const REQUEST_GET = 'GET';
   const REQUEST_POST = 'POST';
 
-  /**
-   * Starts the request and returns the response
-   */
   public static function get( $route = '') {
     return self::call($route, "GET");
+  }
+
+  public static function get_on_demand( $apiKey, $route = '') {
+    return self::call_on_demand($apiKey, $route, "GET");
   }
 
   public static function post( $route = '', $params = []) {
     return self::call($route, "POST", $params);
   }
-  
-  private static function call( $route = '', $type = self::REQUEST_GET, $params = []){
+
+  public static function post_on_demand( $apiKey, $route = '', $params = []) {
+    return self::call_on_demand($apiKey, $route, "POST", $params);
+  }
+
+  private static function call( $route = '', $type = self::REQUEST_GET, $params = []) {
+
+    return self::call_on_demand(Api::getApiKey() , $route, $type, $params);
+  }
+
+  private static function call_on_demand( $apiKey, $route = '', $type = self::REQUEST_GET, $params = []){
     $curlOptions = array();
     $curl = curl_init();
 
-    $curlOptions[CURLOPT_URL] = Constants::API_URL.$route;
+    $curlOptions[CURLOPT_URL] = 'https://api.voucherly.it/v1/'.$route;
     $curlOptions[CURLOPT_RETURNTRANSFER] = true;
 
     if(self::REQUEST_GET == $type) {
@@ -37,7 +47,6 @@ class Request
       $curlOptions[CURLOPT_POST] = true;
     }
 
-    $apiKey = Api::getEnvironment() == Constants::API_LIVE_ENV ? Api::getApiKey() : Api::getApiKeySandboxt();
     $curlOptions[CURLOPT_HTTPHEADER] = array(
       'Voucherly-API-Key: '.$apiKey,
       'Content-Type: application/json',
@@ -64,9 +73,9 @@ class Request
     $responseData = json_decode($responseJson);
 
     if (!$isResponseOk) {
-      throw new \Exception("HTTP status is not 2xx");
-
       // I could check response data
+
+      throw new NotSuccessException($responseStatus);
     }
 
     return $responseData;

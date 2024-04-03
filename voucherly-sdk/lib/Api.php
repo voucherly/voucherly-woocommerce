@@ -5,34 +5,46 @@ namespace VoucherlyApi;
 class Api
 {
   private static $env = "production";
-  private static $apiKey;
+  private static $apiKeyLive;
   private static $apiKeySandbox;
-  private static $securityBearer;
-  private static $version = "1.0.2";
-  private static $authservicesUrl = "https://authservices.satispay.com";
+
+
+  public static function testAuthentication($apiKey): bool {
+    try {
+
+
+      Request::get_on_demand($apiKey, "payments/woocommerce");
+      return true;
+
+    } catch(NotSuccessException $ex) {
+
+      if ($ex->getCode() == 401) {  
+        return false;
+      }
+
+      return true;
+    }
+  }
 
   public static function getApiKey() {
-    return self::$apiKey;
+    return self::$env == "live" ? self::$apiKeyLive : self::$apiKeySandbox;
   }
   
-  public static function setApiKey($value) {
-    self::$apiKey = $value;
-  }
-
-  public static function getApiKeySandboxt() {
-    return self::$apiKeySandbox;
-  }
-
-  public static function setApiKeySandbox($value) {
-    self::$apiKeySandbox = $value;
+  public static function setApiKey($value, $environment) {
+    if ($environment == "live") {
+      self::$apiKeyLive = $value;
+    }
+    else {
+      self::$apiKeySandbox = $value;
+    }
   }
   
   public static function getEnvironment() {
     return self::$env;
   }
   
-  public static function setEnvironment($value) {
-    self::$env = $value;
+  public static function setSandbox($sandbox) {
+    self::$env = $sandbox == 'no' ? "live" : "sand";
   }
   
 }

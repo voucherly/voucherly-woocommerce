@@ -1,4 +1,4 @@
-# Voucherly x Wordpress (WooCommerce)
+# Voucherly x WooCommerce
 
 
 The official [Voucherly][voucherly] Wordpress (WooCommerce) plugin.
