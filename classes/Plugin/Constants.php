@@ -29,27 +29,20 @@ class Constants{
    * Admin constants
    */
 
-  const MAP_ORDERS = 'map_orders';
+
   const MAP_CARRIERS = 'map_carriers';
   const LIVE_API = 'live_api';
   const CATEGORY_IS_FOOD = 'category_is_food';
-  const LOG = 'log';
   const API_KEY = 'api_key';
   const API_KEY_SAND = 'api_key_sand';
-  const EMAIL_NOTIFICATIONS = 'email_notiifcations';
-  const REFUND_TYPE = 'refund_type';
   const WS_KEY_SECRET = 'ws_key_secret';
   const WS_KEY = 'ws_key';
-  const READ_SCOPE = 'read';
-  const WRITE_SCOPE = 'write';
-  const READ_WRITE_SCOPE = 'read_write';
-  const API_TOKEN = 'api_token';
 
   /**
    * API
    */
   const API_URL = 'https://api.voucherly.it/v1/';
-  const API_SAND_ENV = 0;
-  const API_LIVE_ENV = 1;
+  const API_SAND_ENV = "sand";
+  const API_LIVE_ENV = "live";
 
 }

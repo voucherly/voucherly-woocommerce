@@ -1,25 +1,15 @@
 <?php
 
-namespace Voucherly\Api\Dto\Gateway;
+namespace VoucherlyApi\Payment;
 
-class PaymentDto {
+class CreatePaymentRequest {
   
-  /**
-   * @var string
-   */
-  public $customerFirstName = '';
-  /**
-   * @var string
-   */
-  public $customerLastName = '';
-  /**
-   * @var string
-   */
-  public $customerEmail = '';
-  /**
-   * @var string
-   */
-  public $mode = 'Payment';
+  public string $mode = 'Payment';
+  public ?string $referenceId = null;
+  public ?string $customerId = null;
+  public string $customerEmail = '';
+  public string $customerFirstName = '';
+  public string $customerLastName = '';
   /**
    * @var string
    */
@@ -44,12 +34,15 @@ class PaymentDto {
    * @var string
    */
   public $shippingAddress = '';
+
+  public $metadata = [];
+
   /**
-   * @var PaymentProductDto[]
+   * @var CreatePaymentRequestLine[]
    */
   public $lines = [];
   /**
-   * @var PaymentDiscountDto[]
+   * @var CreatePaymentRequestDiscount[]
    */
   public $discounts = [];
 }

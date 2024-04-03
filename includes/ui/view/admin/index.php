@@ -64,20 +64,8 @@ $settings = $admin_settings->loadSettings();
       <input type="text" name="ws_key" class="form-control" value="<?php echo $settings[Constants::DOMAIN.'_'.Constants::WS_KEY] ?? ''; ?>">
     </div>
     <?php
-      include_once(__DIR__.'/includes/mapping_status_orders.php');
       include_once(__DIR__.'/includes/mapping_is_food.php');
     ?>
-    <div class="col-12 mb-3 align-items-center d-flex">
-      <div class="form-check p-0">
-        <label class="form-check-label" for="log"><?php echo __('Attiva i log',Constants::DOMAIN); ?></label>
-        <input type="checkbox" class="form-check-input ml-2 mt-1" name="log" <?php echo isset($settings[Constants::DOMAIN.'_'.Constants::LOG]) ? 'checked' : ''; ?>>
-      </div>
-    </div>
-    <div class="col-12 mb-3">
-      <?php
-        include_once(__DIR__.'/includes/log.php');
-      ?>
-    </div>
     <div class="col-12 pt-3 d-flex justify-content-center">
       <button class="btn btn-primary" name="save">
         <?php echo __('Salva impostazioni',Constants::DOMAIN); ?>

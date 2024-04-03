@@ -1,8 +1,8 @@
 <?php
 
-namespace Voucherly\Api\Dto\Gateway;
+namespace VoucherlyApi\Payment;
 
-class PaymentDiscountDto {
+class CreatePaymentRequestDiscount {
   /**
    * @var string
    */

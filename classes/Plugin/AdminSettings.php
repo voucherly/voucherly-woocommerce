@@ -2,16 +2,12 @@
 
 namespace Voucherly\Plugin;
 
-use Voucherly\Woocommerce\WebserviceManager;
 
 /**
  * Class for saving and loading settings
  */
 class AdminSettings{
 
-  /**
-   * @var \wpdb
-   */
   private $wpdb;
 
   public function __construct(){
@@ -58,7 +54,6 @@ class AdminSettings{
       /**
        * Remove log option for security reasons before saving
        */
-      self::remove(Constants::LOG);
       self::remove(Constants::LIVE_API);
       
       foreach($_POST as $key => $value){

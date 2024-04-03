@@ -1,0 +1,74 @@
+<?php
+
+namespace VoucherlyApi;
+
+use Voucherly\Plugin\Constants;
+
+class Request
+{
+
+  const REQUEST_GET = 'GET';
+  const REQUEST_POST = 'POST';
+
+  /**
+   * Starts the request and returns the response
+   */
+  public static function get( $route = '') {
+    return self::call($route, "GET");
+  }
+
+  public static function post( $route = '', $params = []) {
+    return self::call($route, "POST", $params);
+  }
+  
+  private static function call( $route = '', $type = self::REQUEST_GET, $params = []){
+    $curlOptions = array();
+    $curl = curl_init();
+
+    $curlOptions[CURLOPT_URL] = Constants::API_URL.$route;
+    $curlOptions[CURLOPT_RETURNTRANSFER] = true;
+
+    if(self::REQUEST_GET == $type) {
+      $curlOptions[CURLOPT_HTTPGET] = true;
+    }
+    else{
+      $curlOptions[CURLOPT_CUSTOMREQUEST] = $type;
+      $curlOptions[CURLOPT_POSTFIELDS] = json_encode($params);
+      $curlOptions[CURLOPT_POST] = true;
+    }
+
+    $apiKey = Api::getEnvironment() == Constants::API_LIVE_ENV ? Api::getApiKey() : Api::getApiKeySandboxt();
+    $curlOptions[CURLOPT_HTTPHEADER] = array(
+      'Voucherly-API-Key: '.$apiKey,
+      'Content-Type: application/json',
+      'User-Agent: VoucherlyApiPhpSdk/1.0.0',
+    );
+
+    curl_setopt_array($curl, $curlOptions);
+
+    $responseJson = curl_exec($curl);
+    $responseStatus = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+    $curlErrorCode = curl_errno($curl);
+    $curlErrorMessage = curl_error($curl);
+    curl_close($curl);
+    
+    if (!empty($curlErrorCode) && !empty($curlErrorMessage)) {
+      throw new \Exception($curlErrorMessage, $curlErrorCode);
+    }
+
+    $isResponseOk = true;
+    if ($responseStatus < 200 || $responseStatus > 299) {
+      $isResponseOk = false;
+    }
+
+    $responseData = json_decode($responseJson);
+
+    if (!$isResponseOk) {
+      throw new \Exception("HTTP status is not 2xx");
+
+      // I could check response data
+    }
+
+    return $responseData;
+  }
+}
