@@ -26,6 +26,7 @@ class WC_Voucherly extends WC_Payment_Gateway
 
     $this->title              =  __(self::TITLE, 'woo-voucherly');
     $this->description        =  __(self::DESCRIPTION, 'woo-voucherly');
+    $this->icon               = plugins_url('/logo.svg', __FILE__);
 
     $this->init_form_fields();
     $this->init_settings();
