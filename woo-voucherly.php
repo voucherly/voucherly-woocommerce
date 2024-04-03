@@ -26,13 +26,27 @@ function wc_voucherly_init() {
 
 	include_once('wc-voucherly.php');
     
-	if (!class_exists('WC_Payment_Voucherly')) return;
+	if (!class_exists('WC_Voucherly')) return;
 
     // Make the Voucherly gateway available to WC.
 	add_action('woocommerce_payment_gateways', 'wc_voucherly_add_gateway');
     function wc_voucherly_add_gateway($methods) {
-        $methods[] = "WC_Payment_Voucherly";
+        $methods[] = "WC_Voucherly";
         return $methods;
+    }
+
+    // Registers WooCommerce Blocks integration.
+    add_action( 'woocommerce_blocks_loaded', 'woocommerce_gateway_voucherly_woocommerce_block_support');
+    function woocommerce_gateway_voucherly_woocommerce_block_support() {
+        if ( class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType') ) {
+            require_once 'includes/blocks/wc-voucherly-blocks.php';
+            add_action(
+                'woocommerce_blocks_payment_method_type_registration',
+                function( Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry ) {
+                    $payment_method_registry->register( new WC_Voucherly_Blocks );
+                }
+            );
+        }
     }
 
 	add_filter('plugin_action_links_'.plugin_basename( __FILE__ ), 'wc_voucherly_action_links');
@@ -46,7 +60,7 @@ function wc_voucherly_init() {
     add_action('wc_voucherly_finalize_orders_event', 'wc_voucherly_finalize_orders');
     function wc_voucherly_finalize_orders()
     {
-        $model = new WC_Payment_Voucherly();
+        $model = new WC_Voucherly();
         $model->finalize_orders();
     }
 }

@@ -9,11 +9,13 @@ class Api
   private static $apiKeySandbox;
 
 
-  public static function testAuthentication($apiKey): bool {
+  public static function testAuthentication($apiKey = null): bool {
     try {
 
+      $test = $apiKey == null
+        ? Request::get("payments/woocommerce")
+        : Request::get_on_demand($apiKey, "payments/woocommerce");
 
-      Request::get_on_demand($apiKey, "payments/woocommerce");
       return true;
 
     } catch(NotSuccessException $ex) {
