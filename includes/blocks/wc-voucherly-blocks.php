@@ -6,7 +6,7 @@ use Automattic\WooCommerce\Blocks\Payments\PaymentContext;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * WC_voucherly_Blocks class.
+ * WC_Voucherly_Blocks class.
  *
  * @extends AbstractPaymentMethodType
  */
@@ -45,14 +45,14 @@ final class WC_Voucherly_Blocks extends AbstractPaymentMethodType {
      */
     public function get_payment_method_script_handles() {
         $script_path       = '/assets/js/frontend/blocks.js';
-        $script_asset_path = WC_voucherly::plugin_abspath() . 'assets/js/frontend/blocks.asset.php';
+        $script_asset_path = WC_Voucherly::plugin_abspath() . 'assets/js/frontend/blocks.asset.php';
         $script_asset      = file_exists( $script_asset_path )
             ? require( $script_asset_path )
             : array(
                 'dependencies' => array(),
                 'version'      => '1.2.0'
             );
-        $script_url        = WC_voucherly::plugin_url() . $script_path;
+        $script_url        = WC_Voucherly::plugin_url() . $script_path;
 
         wp_register_script(
             'wc-voucherly-payments-blocks',
@@ -63,7 +63,7 @@ final class WC_Voucherly_Blocks extends AbstractPaymentMethodType {
         );
 
         if ( function_exists( 'wp_set_script_translations' ) ) {
-            wp_set_script_translations( 'wc-voucherly-payments-blocks', 'woo-voucherly', WC_voucherly::plugin_abspath());
+            wp_set_script_translations( 'wc-voucherly-payments-blocks', 'woo-voucherly', WC_Voucherly::plugin_abspath());
         }
 
         return [ 'wc-voucherly-payments-blocks' ];
@@ -76,10 +76,10 @@ final class WC_Voucherly_Blocks extends AbstractPaymentMethodType {
      */
     public function get_payment_method_data() {
         return [
-            'title'         => __(WC_voucherly::TITLE, 'woo-voucherly'),
-            'description'   => __(WC_voucherly::DESCRIPTION, 'woo-voucherly'),
-            'icon'          => WC_voucherly::plugin_url() . '/logo.svg',
-            'supports'      => WC_voucherly::SUPPORTS
+            'title'         => __(WC_Voucherly::TITLE, 'woo-voucherly'),
+            'description'   => __(WC_Voucherly::DESCRIPTION, 'woo-voucherly'),
+            'icon'          => WC_Voucherly::plugin_url() . '/logo.svg',
+            'supports'      => WC_Voucherly::SUPPORTS
         ];
     }
 }

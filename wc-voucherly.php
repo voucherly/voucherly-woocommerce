@@ -1,10 +1,14 @@
 <?php
+if (!defined('ABSPATH')) {
+  exit;
+}
 
 require_once (__DIR__ . '/voucherly-sdk/init.php');
 
 class WC_Voucherly extends WC_Payment_Gateway
 {
   const SessionPaymentIdKey = 'voucherly_payment_id';
+  
   const TITLE = 'Voucherly (carte di pagamento, buoni pasto e altri metodi)';
   const DESCRIPTION = 'Verrai reindirizzato al portale di Voucherly dove potrai pagare con i tuoi buoni pasto o con carta di credito.';
   const SUPPORTS = array(
@@ -67,7 +71,7 @@ class WC_Voucherly extends WC_Payment_Gateway
         'label' => __('Sandbox Mode', 'woo-voucherly'),
         'type' => 'checkbox',
         'default' => 'no',
-        'description' => __('Sandbox Mode can be used to test payments.', 'woo-satispay')
+        'description' => __('Sandbox Mode can be used to test payments.', 'woo-voucherly')
       ),
       'finalizeUnhandledTransactions' => array(
         'title' => __('Finalize unhandled payments', 'woo-voucherly'),

@@ -1,32 +1,37 @@
 <?php
 /**
  * Plugin Name: Voucherly
+ * Plugin URI: https://voucherly.it/
  * Description: Accetta pagamenti tramite buoni pasto per il tuo ecommerce. Non perdere neanche una vendita, incassa online in totale sicurezza e in qualsiasi modalità. Il modo migliore per usare i buoni pasto!
+ * Version: 1.0.1
+ * 
  * Author: Voucherly
- * Author URI: https://voucherly.it/
- * Version: 1.0.0
- * WC tested up to: 8.6.1
+ * Author URI: voucherly.it
+ * 
+ * Text Domain: woo-voucherly
+ * Domain Path: /i18n/languages/
  */
 
-define("CACHE_BUSTER", time() );
-require_once('vendor/autoload.php');
+ if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
 
 add_action( 'before_woocommerce_init', function() {
     if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
         \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
     }
 } );
-add_action('plugins_loaded', 'wc_voucherly_init');
+add_action('plugins_loaded', 'wc_voucherly_init', 0);
 add_filter('cron_schedules', 'wc_voucherly_cron_schedule');
 
 function wc_voucherly_init() {
+    
+	if (!class_exists('WC_Payment_Gateway')) return;
 
 	include_once('wc-voucherly.php');
-    
-	if (!class_exists('WC_Voucherly')) return;
 
     // Make the Voucherly gateway available to WC.
-	add_action('woocommerce_payment_gateways', 'wc_voucherly_add_gateway');
+	add_filter('woocommerce_payment_gateways', 'wc_voucherly_add_gateway', 15);
     function wc_voucherly_add_gateway($methods) {
         $methods[] = "WC_Voucherly";
         return $methods;
@@ -38,7 +43,7 @@ function wc_voucherly_init() {
         if ( class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType') ) {
             require_once 'includes/blocks/wc-voucherly-blocks.php';
             add_action(
-                'woocomerce_blocks_payment_method_type_registration',
+                'woocommerce_blocks_payment_method_type_registration',
                 function( Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry ) {
                     $payment_method_registry->register( new WC_Voucherly_Blocks );
                 }
