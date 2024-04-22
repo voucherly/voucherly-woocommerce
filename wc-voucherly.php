@@ -73,6 +73,13 @@ class WC_Voucherly extends WC_Payment_Gateway
         'default' => 'no',
         'description' => __('Sandbox Mode can be used to test payments.', 'woo-voucherly')
       ),
+      'shippingAsFood' => array(
+        'title' => __('Shipping as food', 'woo-voucherly'),
+        'label' => __('Consider shipping as food', 'woo-voucherly'),
+        'type' => 'checkbox',
+        'default' => 'no',
+        'description' => __('If shipping is considered food, the customer can pay for it with meal vouchers.', 'woo-voucherly')
+      ),
       'finalizeUnhandledTransactions' => array(
         'title' => __('Finalize unhandled payments', 'woo-voucherly'),
         'label' => __('Enable cron', 'woo-voucherly'),
@@ -531,6 +538,7 @@ class WC_Voucherly extends WC_Payment_Gateway
       $shipping->productName = $shipping_method->get_method_title();
       $shipping->unitAmount = round($totalWithTax * 100);
       $shipping->quantity = $shipping_method->get_quantity();
+      $shipping->isFood = $this->get_option('shippingAsFood') === 'yes';
 
       $lines[] = $shipping;
     }
