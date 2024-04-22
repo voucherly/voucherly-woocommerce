@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2024-04-09T15:55:18+02:00\n"
+"POT-Creation-Date: 2024-04-22T16:40:52+02:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.10.0\n"
 "X-Domain: woo-voucherly\n"
@@ -70,38 +70,50 @@ msgid "Sandbox Mode can be used to test payments."
 msgstr ""
 
 #: wc-voucherly.php:77
-msgid "Finalize unhandled payments"
+msgid "Shipping as food"
 msgstr ""
 
 #: wc-voucherly.php:78
-msgid "Enable cron"
+msgid "Consider shipping as food"
 msgstr ""
 
 #: wc-voucherly.php:81
-msgid "Finalize unhandled Voucherly payments with a cron."
+msgid "If shipping is considered food, the customer can pay for it with meal vouchers."
 msgstr ""
 
 #: wc-voucherly.php:84
+msgid "Finalize unhandled payments"
+msgstr ""
+
 #: wc-voucherly.php:85
-msgid "Finalize pending payments up to"
+msgid "Enable cron"
 msgstr ""
 
 #: wc-voucherly.php:88
+msgid "Finalize unhandled Voucherly payments with a cron."
+msgstr ""
+
+#: wc-voucherly.php:91
+#: wc-voucherly.php:92
+msgid "Finalize pending payments up to"
+msgstr ""
+
+#: wc-voucherly.php:95
 msgid "Choose a number of hours, default is four and minimum is two."
 msgstr ""
 
 #. translators: %s is replaced with Voucherly Dashboard link
-#: wc-voucherly.php:207
+#: wc-voucherly.php:214
 msgid "Voucherly is not correctly configured, get an API key in developer section on <a href=\"%s\" target=\"_blank\">Voucherly Dashboard</a>."
 msgstr ""
 
 #. translators: %s is replaced with form label (API key)
-#: wc-voucherly.php:257
+#: wc-voucherly.php:264
 msgid "The \"%s\" is invalid"
 msgstr ""
 
 #. translators: %s is replaced with form label (API key)
-#: wc-voucherly.php:274
+#: wc-voucherly.php:281
 msgid "An error occurred for \"%s\""
 msgstr ""
 

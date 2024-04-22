@@ -1,4 +1,8 @@
 == Changelog ==
+= 1.0.2 =
+* Fix shipping amount (add taxes)
+* "Shipping as food" option 
+
 = 1.0.1 =
 * Blocks support
 
