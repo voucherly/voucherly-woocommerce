@@ -520,13 +520,17 @@ class WC_Voucherly extends WC_Payment_Gateway
 
 
     foreach ($order->get_shipping_methods() as $shipping_method) {
-      if ($shipping_method->get_total() <= 0)
+
+      $totalWithTax = $shipping_method->get_total() + $shipping_method->get_total_tax();
+
+      if ($totalWithTax  <= 0) {
         continue;
+      }
 
       $shipping = new \VoucherlyApi\Payment\CreatePaymentRequestLine();
       $shipping->productName = $shipping_method->get_method_title();
-      $shipping->unitAmount = round($shipping_method->get_total() * 100);
-      $shipping->quantity = 1;
+      $shipping->unitAmount = round($totalWithTax * 100);
+      $shipping->quantity = $shipping_method->get_quantity();
 
       $lines[] = $shipping;
     }
@@ -541,11 +545,14 @@ class WC_Voucherly extends WC_Payment_Gateway
     $coupons = WC()->cart->get_applied_coupons();
 
     foreach ($coupons as $coupon_code) {
+
       $coupon = new WC_Coupon($coupon_code);
+      $discountAmount = WC()->cart->get_coupon_discount_amount( $coupon_code, false );
 
       $discount = new VoucherlyApi\Payment\CreatePaymentRequestDiscount();
       $discount->discountName = $coupon->get_code();
-      $discount->amount = round($coupon->get_amount() * 100);
+      $discount->discountDescription = $coupon->get_description();
+      $discount->amount = round($discountAmount * 100);
 
       $discounts[] = $discount;
     }
