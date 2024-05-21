@@ -2,6 +2,8 @@
 
 namespace VoucherlyApi\Payment;
 
+defined( 'ABSPATH' ) || exit;
+
 class CreatePaymentRequestDiscount {
   /**
    * @var string

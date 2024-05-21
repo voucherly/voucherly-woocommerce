@@ -2,6 +2,8 @@
 
 namespace VoucherlyApi;
 
+defined( 'ABSPATH' ) || exit;
+
 class Request
 {
 

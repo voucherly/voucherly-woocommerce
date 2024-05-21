@@ -1,8 +1,8 @@
 <?php
 
-
-
 namespace VoucherlyApi\Payment;
+
+defined( 'ABSPATH' ) || exit;
 
 class Payment {
 

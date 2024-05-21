@@ -2,6 +2,8 @@
 
 namespace VoucherlyApi;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Exception is the base class for all user exceptions.
  */

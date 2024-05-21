@@ -24,6 +24,8 @@
 *  International Registered Trademark & Property of PrestaShop SA
 */
 
+defined( 'ABSPATH' ) || exit;
+
 require_once(dirname(__FILE__) . "/lib/Api.php");
 require_once(dirname(__FILE__) . "/lib/NotSuccessException.php");
 require_once(dirname(__FILE__) . "/lib/Request.php");

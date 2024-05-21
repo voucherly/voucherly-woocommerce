@@ -2,6 +2,8 @@
 
 namespace VoucherlyApi\Payment;
 
+defined( 'ABSPATH' ) || exit;
+
 class CreatePaymentRequestLine {
   
   public int $quantity = 0;
