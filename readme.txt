@@ -3,7 +3,7 @@ Contributors: voucherly
 Tags: woocommerce, voucherly, buoni pasto, edenred, pellegrini
 Requires at least: 5.0
 Tested up to: 6.5.0
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -37,6 +37,5 @@ Aumenta le tue vendite attirando nuovi clienti interessati a spendere i propri b
 Monitora i flussi di vendita, genera report e gestisci l'operatività direttamente da un'unica interfaccia.
 
 == Changelog ==
-= 1.0.2 =
-* Fix shipping amount (add taxes)
-* "Shipping as food" option 
+= 1.0.3 =
+* Plugin guidelines refactoring

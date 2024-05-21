@@ -1,4 +1,7 @@
 == Changelog ==
+= 1.0.3 =
+* Plugin guidelines refactoring
+
 = 1.0.2 =
 * Fix shipping amount (add taxes)
 * "Shipping as food" option 

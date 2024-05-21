@@ -17,9 +17,9 @@ class Voucherly extends WC_Payment_Gateway
 
   public function __construct()
   {
-    if ((!empty($_GET['section'])) && ($_GET['section'] == 'voucherly')) {
-      $GLOBALS['hide_save_button'] = false;
-    }
+    // if ((!empty($_GET['section'])) && ($_GET['section'] == 'voucherly')) {
+    //   $GLOBALS['hide_save_button'] = false;
+    // }
 
     $this->id                 = "voucherly";
     $this->method_title       = "Voucherly";
@@ -27,8 +27,8 @@ class Voucherly extends WC_Payment_Gateway
     $this->has_fields         = false;
     $this->supports           = self::SUPPORTS;
 
-    $this->title              =  __(self::TITLE, 'voucherly');
-    $this->description        =  __(self::DESCRIPTION, 'voucherly');
+    $this->title              = self::TITLE;
+    $this->description        = self::DESCRIPTION;
     $this->icon               = plugins_url('/logo.svg', __FILE__);
 
     $this->init_form_fields();

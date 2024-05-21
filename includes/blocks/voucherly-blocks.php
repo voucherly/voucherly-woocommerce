@@ -74,8 +74,8 @@ final class Voucherly_Blocks extends AbstractPaymentMethodType {
      */
     public function get_payment_method_data() {
         return [
-            'title'         => __(Voucherly::TITLE, 'voucherly'),
-            'description'   => __(Voucherly::DESCRIPTION, 'voucherly'),
+            'title'         => Voucherly::TITLE,
+            'description'   => Voucherly::DESCRIPTION,
             'icon'          => Voucherly::plugin_url() . '/logo.svg',
             'supports'      => Voucherly::SUPPORTS
         ];
