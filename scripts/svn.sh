@@ -6,7 +6,7 @@ svn co https://plugins.svn.wordpress.org/woo-voucherly tmp-svn
 cp LICENSE tmp-svn/trunk
 cp readme.txt tmp-svn/trunk
 cp logo.svg tmp-svn/trunk
-cp wc-voucherly.php tmp-svn/trunk
+cp voucherly.php tmp-svn/trunk
 cp woo-voucherly.php tmp-svn/trunk
 cp woo-voucherly.pot tmp-svn/trunk
 cp -R assets  tmp-svn/trunk

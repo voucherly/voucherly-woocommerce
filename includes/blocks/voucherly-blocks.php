@@ -6,11 +6,11 @@ use Automattic\WooCommerce\Blocks\Payments\PaymentContext;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * WC_Voucherly_Blocks class.
+ * Voucherly_Blocks class.
  *
  * @extends AbstractPaymentMethodType
  */
-final class WC_Voucherly_Blocks extends AbstractPaymentMethodType {
+final class Voucherly_Blocks extends AbstractPaymentMethodType {
 
     /**
      * Payment method name defined by payment methods extending this class.
@@ -45,17 +45,17 @@ final class WC_Voucherly_Blocks extends AbstractPaymentMethodType {
      */
     public function get_payment_method_script_handles() {
         $script_path       = '/assets/js/frontend/blocks.js';
-        $script_asset_path = WC_Voucherly::plugin_abspath() . 'assets/js/frontend/blocks.asset.php';
+        $script_asset_path = Voucherly::plugin_abspath() . 'assets/js/frontend/blocks.asset.php';
         $script_asset      = file_exists( $script_asset_path )
             ? require( $script_asset_path )
             : array(
                 'dependencies' => array(),
                 'version'      => '1.2.0'
             );
-        $script_url        = WC_Voucherly::plugin_url() . $script_path;
+        $script_url        = Voucherly::plugin_url() . $script_path;
 
         wp_register_script(
-            'wc-voucherly-payments-blocks',
+            'voucherly-payments-blocks',
             $script_url,
             $script_asset[ 'dependencies' ],
             $script_asset[ 'version' ],
@@ -63,10 +63,10 @@ final class WC_Voucherly_Blocks extends AbstractPaymentMethodType {
         );
 
         if ( function_exists( 'wp_set_script_translations' ) ) {
-            wp_set_script_translations( 'wc-voucherly-payments-blocks', 'woo-voucherly', WC_Voucherly::plugin_abspath());
+            wp_set_script_translations( 'voucherly-payments-blocks', 'woo-voucherly', Voucherly::plugin_abspath());
         }
 
-        return [ 'wc-voucherly-payments-blocks' ];
+        return [ 'voucherly-payments-blocks' ];
     }
 
     /**
@@ -76,10 +76,10 @@ final class WC_Voucherly_Blocks extends AbstractPaymentMethodType {
      */
     public function get_payment_method_data() {
         return [
-            'title'         => __(WC_Voucherly::TITLE, 'woo-voucherly'),
-            'description'   => __(WC_Voucherly::DESCRIPTION, 'woo-voucherly'),
-            'icon'          => WC_Voucherly::plugin_url() . '/logo.svg',
-            'supports'      => WC_Voucherly::SUPPORTS
+            'title'         => __(Voucherly::TITLE, 'woo-voucherly'),
+            'description'   => __(Voucherly::DESCRIPTION, 'woo-voucherly'),
+            'icon'          => Voucherly::plugin_url() . '/logo.svg',
+            'supports'      => Voucherly::SUPPORTS
         ];
     }
 }

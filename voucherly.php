@@ -5,7 +5,7 @@ if (!defined('ABSPATH')) {
 
 require_once (__DIR__ . '/voucherly-sdk/init.php');
 
-class WC_Voucherly extends WC_Payment_Gateway
+class Voucherly extends WC_Payment_Gateway
 {
   const SessionPaymentIdKey = 'voucherly_payment_id';
   
