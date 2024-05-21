@@ -21,6 +21,10 @@ Anche per i tuoi clienti sarà un gioco da ragazzi:
 La semplicità del processo riduce le barriere per i consumatori, con conseguente riduzione dei carrelli abbandonati alla cassa.
 
 Per attivare il servizio, devi completare l'onboarding su https://dashboard.voucherly.it. La registrazione è gratuita, non ci sono costi di attivazione o oneri di disattivazione.
+Utilizzando il servizio si accettano integralmente e incodizionatamente:
+ - Terms of Service: https://legal.voucherly.it/category/terms-of-service/.
+ - Privacy Policy: https://legal.voucherly.it/privacy/privacy-policy/.
+ 
 Per maggiori informazioni, visita la nostra pagina https://voucherly.it.
 
 **Pronto in pochi minuti**
