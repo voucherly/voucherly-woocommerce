@@ -61,7 +61,7 @@ final class Voucherly_Blocks extends AbstractPaymentMethodType {
         );
 
         if ( function_exists( 'wp_set_script_translations' ) ) {
-            wp_set_script_translations( 'voucherly-payments-blocks', 'woo-voucherly', Voucherly::plugin_abspath());
+            wp_set_script_translations( 'voucherly-payments-blocks', 'voucherly', Voucherly::plugin_abspath());
         }
 
         return [ 'voucherly-payments-blocks' ];
@@ -74,8 +74,8 @@ final class Voucherly_Blocks extends AbstractPaymentMethodType {
      */
     public function get_payment_method_data() {
         return [
-            'title'         => __(Voucherly::TITLE, 'woo-voucherly'),
-            'description'   => __(Voucherly::DESCRIPTION, 'woo-voucherly'),
+            'title'         => __(Voucherly::TITLE, 'voucherly'),
+            'description'   => __(Voucherly::DESCRIPTION, 'voucherly'),
             'icon'          => Voucherly::plugin_url() . '/logo.svg',
             'supports'      => Voucherly::SUPPORTS
         ];

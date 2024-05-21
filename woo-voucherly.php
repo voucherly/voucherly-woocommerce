@@ -9,7 +9,7 @@
  * Requires Plugins: woocommerce
  * Requires at least: 5.0
  * Tested up to: 6.5.0
- * Text Domain: woo-voucherly
+ * Text Domain: voucherly
  * Domain Path: /i18n/languages/
  * License: GPLv3 or later
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -55,7 +55,7 @@ function voucherly_init() {
 	add_filter('plugin_action_links_'.plugin_basename( __FILE__ ), 'voucherly_action_links');
 	function voucherly_action_links($links) {
 		$pluginLinks = array(
-			'<a href="'.admin_url('admin.php?page=wc-settings&tab=checkout&section=voucherly').'">'.__('Settings', 'woo-voucherly').'</a>'
+			'<a href="' . admin_url('admin.php?page=wc-settings&tab=checkout&section=voucherly').'">' . __('Settings', 'voucherly').'</a>'
 		);
 		return array_merge($pluginLinks, $links);
 	}

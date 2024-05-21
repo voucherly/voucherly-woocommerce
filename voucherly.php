@@ -27,8 +27,8 @@ class Voucherly extends WC_Payment_Gateway
     $this->has_fields         = false;
     $this->supports           = self::SUPPORTS;
 
-    $this->title              =  __(self::TITLE, 'woo-voucherly');
-    $this->description        =  __(self::DESCRIPTION, 'woo-voucherly');
+    $this->title              =  __(self::TITLE, 'voucherly');
+    $this->description        =  __(self::DESCRIPTION, 'voucherly');
     $this->icon               = plugins_url('/logo.svg', __FILE__);
 
     $this->init_form_fields();
@@ -48,50 +48,50 @@ class Voucherly extends WC_Payment_Gateway
   {
     $this->form_fields = array(
       'enabled' => array(
-        'title' => __('Enable/Disable', 'woo-voucherly'),
+        'title' => __('Enable/Disable', 'voucherly'),
         'type' => 'checkbox',
-        'label' => __('Enable Voucherly', 'woo-voucherly'),
+        'label' => __('Enable Voucherly', 'voucherly'),
         'default' => 'yes',
       ),
       'apiKey-live' => array(
-        'title' => __('API key live', 'woo-voucherly'),
+        'title' => 'API key live',
         'type' => 'text',
         /* translators: %s is replaced with Voucherly Dashboard link */
-        'description' => sprintf(__('Locate API key in developer section on <a href="%s" target="_blank">Voucherly Dashboard</a>.', 'woo-voucherly'), 'https://dashboard.voucherly.it')
+        'description' => sprintf(__('Locate API key in developer section on <a href="%s" target="_blank">Voucherly Dashboard</a>.', 'voucherly'), 'https://dashboard.voucherly.it')
       ),
       'apiKey-sand' => array(
-        'title' => __('API key sand', 'woo-voucherly'),
+        'title' => 'API key sand',
         'type' => 'text',
         /* translators: %s is replaced with Voucherly Dashboard link */
-        'description' => sprintf(__('Locate API key in developer section on <a href="%s" target="_blank">Voucherly Dashboard</a>.', 'woo-voucherly'), 'https://dashboard.voucherly.it')
+        'description' => sprintf(__('Locate API key in developer section on <a href="%s" target="_blank">Voucherly Dashboard</a>.', 'voucherly'), 'https://dashboard.voucherly.it')
       ),
       'sandbox' => array(
-        'title' => __('Sandbox', 'woo-voucherly'),
-        'label' => __('Sandbox Mode', 'woo-voucherly'),
+        'title' => __('Sandbox', 'voucherly'),
+        'label' => __('Sandbox Mode', 'voucherly'),
         'type' => 'checkbox',
         'default' => 'no',
-        'description' => __('Sandbox Mode can be used to test payments.', 'woo-voucherly')
+        'description' => __('Sandbox Mode can be used to test payments.', 'voucherly')
       ),
       'shippingAsFood' => array(
-        'title' => __('Shipping as food', 'woo-voucherly'),
-        'label' => __('Consider shipping as food', 'woo-voucherly'),
+        'title' => __('Shipping as food', 'voucherly'),
+        'label' => __('Consider shipping as food', 'voucherly'),
         'type' => 'checkbox',
         'default' => 'no',
-        'description' => __('If shipping is considered food, the customer can pay for it with meal vouchers.', 'woo-voucherly')
+        'description' => __('If shipping is considered food, the customer can pay for it with meal vouchers.', 'voucherly')
       ),
       'finalizeUnhandledTransactions' => array(
-        'title' => __('Finalize unhandled payments', 'woo-voucherly'),
-        'label' => __('Enable cron', 'woo-voucherly'),
+        'title' => __('Finalize unhandled payments', 'voucherly'),
+        'label' => __('Enable cron', 'voucherly'),
         'type' => 'checkbox',
         'default' => 'no',
-        'description' => sprintf(__('Finalize unhandled Voucherly payments with a cron.', 'woo-voucherly'))
+        'description' => sprintf(__('Finalize unhandled Voucherly payments with a cron.', 'voucherly'))
       ),
       'finalizeMaxHours' => array(
-        'title' => __('Finalize pending payments up to', 'woo-voucherly'),
-        'label' => __('Finalize pending payments up to', 'woo-voucherly'),
+        'title' => __('Finalize pending payments up to', 'voucherly'),
+        'label' => __('Finalize pending payments up to', 'voucherly'),
         'type' => 'integer',
         'default' => 4,
-        'description' => sprintf(__('Choose a number of hours, default is four and minimum is two.', 'woo-voucherly'))
+        'description' => sprintf(__('Choose a number of hours, default is four and minimum is two.', 'voucherly'))
       )
     );
   }
@@ -212,7 +212,7 @@ class Voucherly extends WC_Payment_Gateway
     if (!$ok) {
       echo '<div class="notice-error notice">';
       /* translators: %s is replaced with Voucherly Dashboard link */
-      echo '<p>' . sprintf(__('Voucherly is not correctly configured, get an API key in developer section on <a href="%s" target="_blank">Voucherly Dashboard</a>.', 'woo-voucherly'), 'https://dashboard.voucherly.com') . '</p>';
+      echo '<p>' . esc_html( sprintf(__('Voucherly is not correctly configured, get an API key in developer section on <a href="%s" target="_blank">Voucherly Dashboard</a>.', 'voucherly'), 'https://dashboard.voucherly.com') ) . '</p>';
       echo '</div>';
     }
     
@@ -262,7 +262,7 @@ class Voucherly extends WC_Payment_Gateway
       if (!$ok) {
         echo '<div class="notice-error notice">';
         /* translators: %s is replaced with form label (API key) */
-        echo '<p>' . sprintf(__('The "%s" is invalid', 'woo-voucherly'), __($textKey, 'woo-voucherly')) . '</p>';
+        echo '<p>' . esc_html( sprintf(__('The "%s" is invalid', 'voucherly'), $textKey) ) . '</p>';
         echo '</div>';
 
         return false;
@@ -279,7 +279,7 @@ class Voucherly extends WC_Payment_Gateway
     } catch (\Exception $ex) {
       echo '<div class="notice-error notice">';
       /* translators: %s is replaced with form label (API key) */
-      echo '<p>' . sprintf(__('An error occurred for "%s"', 'woo-voucherly'), __($textKey, 'woo-voucherly')) . '</p>';
+      echo '<p>' . esc_html( sprintf(__('An error occurred for "%s"', 'voucherly'), $textKey) ) . '</p>';
       echo '</div>';
 
       return false;
