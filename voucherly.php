@@ -150,7 +150,11 @@ class Voucherly extends WC_Payment_Gateway
 
   public function gateway_api()
   {
-    switch ($_GET['action']) {
+    if ( !isset($_GET['action']) ) {
+      exit;
+    }
+
+    switch ( $_GET['action'] ) {
       case 'redirect':
         $paymentId = WC()->session->get(self::SessionPaymentIdKey);
         if (!$paymentId) {
@@ -171,20 +175,18 @@ class Voucherly extends WC_Payment_Gateway
 
         break;
       case 's2s':
-        $orderId = $_GET['orderId'];
+        $orderId = sanitize_text_field($_GET['orderId']);
         if (!$orderId) {
           header('Location: ' . $this->get_return_url(''));
           break;
         }
 
         $order = new WC_Order($orderId);
-
         if ($order->has_status(wc_get_is_paid_statuses())) {
           exit;
         }
 
         $payment = \VoucherlyApi\Payment\Payment::get($order->get_transaction_id());
-
         if (!self::paymentIsPaidOrCaptured($payment)) {
           exit;
         }
