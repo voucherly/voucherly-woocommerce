@@ -9,29 +9,29 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2024-05-21T20:35:13+02:00\n"
+"POT-Creation-Date: 2024-05-21T20:39:38+02:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.10.0\n"
 "X-Domain: voucherly\n"
 
 #. Plugin Name of the plugin
 #. Author of the plugin
-#: D:\source\voucherly\voucherly-woocommerce\woo-voucherly.php
+#: D:\source\voucherly\voucherly-woocommerce\woocommerce-gateway-voucherly.php
 msgid "Voucherly"
 msgstr ""
 
 #. Plugin URI of the plugin
-#: D:\source\voucherly\voucherly-woocommerce\woo-voucherly.php
+#: D:\source\voucherly\voucherly-woocommerce\woocommerce-gateway-voucherly.php
 msgid "https://voucherly.it/"
 msgstr ""
 
 #. Description of the plugin
-#: D:\source\voucherly\voucherly-woocommerce\woo-voucherly.php
+#: D:\source\voucherly\voucherly-woocommerce\woocommerce-gateway-voucherly.php
 msgid "Accetta pagamenti tramite buoni pasto per il tuo ecommerce. Non perdere neanche una vendita, incassa online in totale sicurezza e in qualsiasi modalità. Il modo migliore per usare i buoni pasto!"
 msgstr ""
 
 #. Author URI of the plugin
-#: D:\source\voucherly\voucherly-woocommerce\woo-voucherly.php
+#: D:\source\voucherly\voucherly-woocommerce\woocommerce-gateway-voucherly.php
 msgid "voucherly.it"
 msgstr ""
 
@@ -69,6 +69,36 @@ msgstr ""
 msgid "Consider shipping as food"
 msgstr ""
 
+#: voucherly.php:80
+msgid "If shipping is considered food, the customer can pay for it with meal vouchers."
+msgstr ""
+
+#: voucherly.php:83
+msgid "Finalize unhandled payments"
+msgstr ""
+
+#: voucherly.php:84
+msgid "Enable cron"
+msgstr ""
+
+#: voucherly.php:87
+msgid "Finalize unhandled Voucherly payments with a cron."
+msgstr ""
+
+#: voucherly.php:90
+#: voucherly.php:91
+msgid "Finalize pending payments up to"
+msgstr ""
+
+#: voucherly.php:94
+msgid "Choose a number of hours, default is four and minimum is two."
+msgstr ""
+
+#. translators: %s is replaced with Voucherly Dashboard link
+#: voucherly.php:215
+msgid "Voucherly is not correctly configured, get an API key in developer section on <a href=\"%s\" target=\"_blank\">Voucherly Dashboard</a>."
+msgstr ""
+
 #. translators: %s is replaced with form label (API key)
 #: voucherly.php:265
 msgid "The \"%s\" is invalid"
@@ -79,6 +109,6 @@ msgstr ""
 msgid "An error occurred for \"%s\""
 msgstr ""
 
-#: woo-voucherly.php:58
+#: woocommerce-gateway-voucherly.php:58
 msgid "Settings"
 msgstr ""
