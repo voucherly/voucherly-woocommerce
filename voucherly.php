@@ -207,7 +207,6 @@ class Voucherly extends WC_Payment_Gateway
     }
   }
 
-
   public function admin_options()
   {
     $ok = \VoucherlyApi\Api::testAuthentication();
@@ -233,11 +232,11 @@ class Voucherly extends WC_Payment_Gateway
       return false;
     }
 
-    $postData = $this->get_post_data();
-    $newSandbox = $postData['woocommerce_voucherly_sandbox'];
-    \VoucherlyApi\Api::setSandbox($newSandbox);
+    parent::process_admin_options();
 
-    return parent::process_admin_options();
+    \VoucherlyApi\Api::setSandbox($this->get_option('sandbox'));
+
+    $this->get_and_update_payment_gateways();
   }
 
   private function processApiKey($environment): bool
@@ -268,26 +267,8 @@ class Voucherly extends WC_Payment_Gateway
       }
 
       $this->update_option($optionKey, $newApiKey);
-      
+
       \VoucherlyApi\Api::setApiKey($newApiKey, $environment);
-
-      $paymentGatewaysResponse = \VoucherlyApi\PaymentGateway\PaymentGateway::list();
-      $paymentGateways = $paymentGatewaysResponse->items; 
-      $gateways = [];
-
-      foreach ($paymentGateways as $gateway) {
-
-        if ( $gateway->isActive ) {
-
-          $formattedGateway["id"] = $gateway->id;
-          $formattedGateway["src"] = $gateway->icon ?? $gateway->checkoutImage;
-          $formattedGateway["alt"] = $gateway->name;
-
-          $gateways[] = $formattedGateway;
-        }
-      }
-
-      $this->update_option('gateways_'. $environment, json_encode($gateways));
 
       // Delete user metadata (?)
 
@@ -301,6 +282,29 @@ class Voucherly extends WC_Payment_Gateway
 
       return false;
     }
+  }
+  
+  private function get_and_update_payment_gateways() 
+  {
+    $environment = VoucherlyApi\Api::getEnvironment();
+    $paymentGatewaysResponse = \VoucherlyApi\PaymentGateway\PaymentGateway::list();
+    $paymentGateways = $paymentGatewaysResponse->items; 
+    $gateways = [];
+
+    foreach ($paymentGateways as $gateway) {
+
+      if ( $gateway->isActive && !$gateway->merchantConfiguration->isFallback ) {
+
+        $formattedGateway["id"] = $gateway->id;
+        $formattedGateway["src"] = $gateway->icon ?? $gateway->checkoutImage;
+        $formattedGateway["alt"] = $gateway->name;
+
+        $gateways[] = $formattedGateway;
+      }
+    }
+
+    $this->update_option('gateways_'. $environment, json_encode($gateways));
+    
   }
 
   public function is_available()
@@ -433,6 +437,25 @@ class Voucherly extends WC_Payment_Gateway
   }
 
   // END finalize_orders
+
+  public function update_payment_gateways()
+  {
+    if ($this->get_option('enabled') === 'yes') {
+      try {
+
+        $this->get_and_update_payment_gateways();
+
+      } catch (\Exception $e) {
+        if (function_exists('wc_get_logger')) {
+          $logger = wc_get_logger();
+          $logger->debug(
+            'An error occured when updating payment gateways. Error: ' . $e->getMessage(),
+            array('source' => 'voucherly')
+          );
+        }
+      }
+    }
+  }
 
   /**
    * 

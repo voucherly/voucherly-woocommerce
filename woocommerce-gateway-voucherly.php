@@ -66,6 +66,13 @@ function voucherly_init() {
         $model = new Voucherly();
         $model->finalize_orders();
     }
+    
+    add_action('voucherly_update_payment_gateways_event', 'voucherly_update_payment_gateways');
+    function voucherly_update_payment_gateways()
+    {
+        $model = new Voucherly();
+        $model->update_payment_gateways();
+    }
 }
 
 /**
@@ -77,8 +84,12 @@ function voucherly_init() {
  */
 function voucherly_cron_schedule($schedules) {
     $schedules['every_four_hours'] = array(
-        'interval' => 14400, // Every 4 hours
+        'interval' => 14400,
         'display'  => 'Every 4 hours',
+    );
+    $schedules['every_day'] = array(
+        'interval' => 86400,
+        'display'  => 'Every day',
     );
     return $schedules;
 }
@@ -88,11 +99,15 @@ function voucherly_activate()
     if ( !wp_next_scheduled( 'voucherly_finalize_orders_event' ) ) {
         wp_schedule_event(time(), 'every_four_hours', 'voucherly_finalize_orders_event'); // voucherly_finalize_orders_event is a hook
     }
+    if ( !wp_next_scheduled( 'voucherly_update_payment_gateways_event' ) ) {
+        wp_schedule_event(time(), 'every_day', 'voucherly_update_payment_gateways_event'); // voucherly_update_payment_gateways_event is a hook
+    }
 }
 register_activation_hook( __FILE__, 'voucherly_activate');
 
 function voucherly_deactivate()
 {
     wp_clear_scheduled_hook('voucherly_finalize_orders_event');
+    wp_clear_scheduled_hook('voucherly_update_payment_gateways_event');
 }
 register_deactivation_hook( __FILE__ , 'voucherly_deactivate');

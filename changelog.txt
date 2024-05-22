@@ -1,5 +1,6 @@
 == Changelog ==
 = 1.0.3 =
+* Display payment gateways' icons
 * Plugin guidelines refactoring
 
 = 1.0.2 =

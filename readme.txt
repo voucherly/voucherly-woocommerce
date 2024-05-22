@@ -38,4 +38,5 @@ Monitora i flussi di vendita, genera report e gestisci l'operatività direttamen
 
 == Changelog ==
 = 1.0.3 =
+* Display payment gateways' icons
 * Plugin guidelines refactoring

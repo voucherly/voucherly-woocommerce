@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2024-05-22T02:00:48+02:00\n"
+"POT-Creation-Date: 2024-05-22T04:11:40+02:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.10.0\n"
 "X-Domain: voucherly\n"
@@ -35,77 +35,77 @@ msgstr ""
 msgid "voucherly.it"
 msgstr ""
 
-#: voucherly.php:51
+#: voucherly.php:53
 msgid "Enable/Disable"
 msgstr ""
 
-#: voucherly.php:53
+#: voucherly.php:55
 msgid "Enable Voucherly"
 msgstr ""
 
 #. translators: %s is replaced with Voucherly Dashboard link
-#: voucherly.php:60
-#: voucherly.php:66
+#: voucherly.php:62
+#: voucherly.php:68
 msgid "Locate API key in developer section on <a href=\"%s\" target=\"_blank\">Voucherly Dashboard</a>."
 msgstr ""
 
-#: voucherly.php:69
+#: voucherly.php:71
 msgid "Sandbox"
 msgstr ""
 
-#: voucherly.php:70
+#: voucherly.php:72
 msgid "Sandbox Mode"
 msgstr ""
 
-#: voucherly.php:73
+#: voucherly.php:75
 msgid "Sandbox Mode can be used to test payments."
 msgstr ""
 
-#: voucherly.php:76
+#: voucherly.php:78
 msgid "Shipping as food"
 msgstr ""
 
-#: voucherly.php:77
+#: voucherly.php:79
 msgid "Consider shipping as food"
 msgstr ""
 
-#: voucherly.php:80
+#: voucherly.php:82
 msgid "If shipping is considered food, the customer can pay for it with meal vouchers."
 msgstr ""
 
-#: voucherly.php:83
+#: voucherly.php:85
 msgid "Finalize unhandled payments"
 msgstr ""
 
-#: voucherly.php:84
+#: voucherly.php:86
 msgid "Enable cron"
 msgstr ""
 
-#: voucherly.php:87
+#: voucherly.php:89
 msgid "Finalize unhandled Voucherly payments with a cron."
 msgstr ""
 
-#: voucherly.php:90
-#: voucherly.php:91
+#: voucherly.php:92
+#: voucherly.php:93
 msgid "Finalize pending payments up to"
 msgstr ""
 
-#: voucherly.php:94
+#: voucherly.php:96
 msgid "Choose a number of hours, default is four and minimum is two."
 msgstr ""
 
 #. translators: %s is replaced with Voucherly Dashboard link
-#: voucherly.php:215
+#: voucherly.php:216
 msgid "Voucherly is not correctly configured, get an API key in developer section on <a href=\"%s\" target=\"_blank\">Voucherly Dashboard</a>."
 msgstr ""
 
 #. translators: %s is replaced with form label (API key)
-#: voucherly.php:264
+#: voucherly.php:265
 msgid "The \"%s\" is invalid"
 msgstr ""
 
 #. translators: %s is replaced with form label (API key)
-#: voucherly.php:298
+#: voucherly.php:282
 msgid "An error occurred for \"%s\""
 msgstr ""
 
