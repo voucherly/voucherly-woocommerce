@@ -37,11 +37,13 @@ class Voucherly extends WC_Payment_Gateway
     add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
     add_action('woocommerce_api_wc_gateway_' . $this->id, array($this, 'gateway_api'));
 
-    \VoucherlyApi\Api::setApiKey($this->get_option('apiKey-live'), "live");
-    \VoucherlyApi\Api::setApiKey($this->get_option('apiKey-sand'), "sand");
+    \VoucherlyApi\Api::setApiKey($this->get_option('apiKey_live'), "live");
+    \VoucherlyApi\Api::setApiKey($this->get_option('apiKey_sand'), "sand");
     \VoucherlyApi\Api::setSandbox($this->get_option('sandbox'));    
     
     add_action('woocommerce_available_payment_gateways', array($this, 'check_gateway'), 15);
+    
+		add_action( 'wp_enqueue_scripts', [ $this, 'payment_scripts' ] );
   }
 
   public function init_form_fields()
@@ -53,13 +55,13 @@ class Voucherly extends WC_Payment_Gateway
         'label' => __('Enable Voucherly', 'voucherly'),
         'default' => 'yes',
       ),
-      'apiKey-live' => array(
+      'apiKey_live' => array(
         'title' => 'API key live',
         'type' => 'text',
         /* translators: %s is replaced with Voucherly Dashboard link */
         'description' => sprintf(__('Locate API key in developer section on <a href="%s" target="_blank">Voucherly Dashboard</a>.', 'voucherly'), 'https://dashboard.voucherly.it')
       ),
-      'apiKey-sand' => array(
+      'apiKey_sand' => array(
         'title' => 'API key sand',
         'type' => 'text',
         /* translators: %s is replaced with Voucherly Dashboard link */
@@ -209,7 +211,7 @@ class Voucherly extends WC_Payment_Gateway
   public function admin_options()
   {
     $ok = \VoucherlyApi\Api::testAuthentication();
-    if (!$ok) {
+    if ( !$ok ) {
       echo '<div class="notice-error notice">';
       /* translators: %s is replaced with Voucherly Dashboard link */
       echo '<p>' . esc_html( sprintf(__('Voucherly is not correctly configured, get an API key in developer section on <a href="%s" target="_blank">Voucherly Dashboard</a>.', 'voucherly'), 'https://dashboard.voucherly.com') ) . '</p>';
@@ -221,8 +223,6 @@ class Voucherly extends WC_Payment_Gateway
 
   public function process_admin_options()
   {
-
-
     $liveOk = $this->processApiKey("live");
     if (!$liveOk) {
       return false;
@@ -245,21 +245,20 @@ class Voucherly extends WC_Payment_Gateway
 
     $postData = $this->get_post_data();
 
-    $optionKey = 'apiKey-' . $environment;
+    $optionKey = 'apiKey_' . $environment;
     $textKey = 'API key ' . $environment;
 
     $apiKey = $this->get_option($optionKey);
     $newApiKey = $postData['woocommerce_voucherly_' . $optionKey];
 
-    if (empty($newApiKey) || $newApiKey == $apiKey) {
-      return true;
-    }
+    // if (empty($newApiKey) || $newApiKey == $apiKey) {
+    //   return true;
+    // }
 
     try {
 
-
       $ok = \VoucherlyApi\Api::testAuthentication($newApiKey);
-      if (!$ok) {
+      if ( !$ok ) {
         echo '<div class="notice-error notice">';
         /* translators: %s is replaced with form label (API key) */
         echo '<p>' . esc_html( sprintf(__('The "%s" is invalid', 'voucherly'), $textKey) ) . '</p>';
@@ -269,8 +268,26 @@ class Voucherly extends WC_Payment_Gateway
       }
 
       $this->update_option($optionKey, $newApiKey);
-
+      
       \VoucherlyApi\Api::setApiKey($newApiKey, $environment);
+
+      $paymentGatewaysResponse = \VoucherlyApi\PaymentGateway\PaymentGateway::list();
+      $paymentGateways = $paymentGatewaysResponse->items; 
+      $gateways = [];
+
+      foreach ($paymentGateways as $gateway) {
+
+        if ( $gateway->isActive ) {
+
+          $formattedGateway["id"] = $gateway->id;
+          $formattedGateway["src"] = $gateway->icon ?? $gateway->checkoutImage;
+          $formattedGateway["alt"] = $gateway->name;
+
+          $gateways[] = $formattedGateway;
+        }
+      }
+
+      $this->update_option('gateways_'. $environment, json_encode($gateways));
 
       // Delete user metadata (?)
 
@@ -293,6 +310,15 @@ class Voucherly extends WC_Payment_Gateway
     }
     return true;
   }
+  
+	public function payment_scripts() {
+
+		// wp_register_style( 'voucherly_styles', get_stylesheet_directory_uri().'/assets/css/voucherly-styles.css', [], "1.0.3" );
+		wp_register_style( 'voucherly_styles', plugins_url( '/assets/css/voucherly-styles.css',  __FILE__ ), [], "1.0.3" );
+		wp_enqueue_style( 'voucherly_styles' );
+
+	}
+
 
   public function get_transaction_url($order)
   {
@@ -301,6 +327,29 @@ class Voucherly extends WC_Payment_Gateway
   }
 
 
+  /**
+	 * Get_icon function.
+	 *
+	 * @since 1.0.0
+	 * @version 4.0.0
+	 * @return string
+	 */
+	public function get_icon() {
+    
+    $gateways = json_decode($this->get_option('gateways_'. \VoucherlyApi\Api::getEnvironment()));
+    if ( !isset($gateways) )
+    {
+      return '';
+    }
+
+		foreach ( $gateways as $i ) {
+			$icon_html .= '<img src="' . esc_attr( $i->src ) . '" alt="' . esc_attr( $i->alt ) . '" class="voucherly_icon" />';
+		}
+
+		// $icon_html .= sprintf( '<a href="%1$s" class="about_voucherly" onclick="javascript:window.open(\'%1$s\',\'Voucherly\',\'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=1060, height=700\'); return false;">' . esc_attr__( 'Che cosa è Voucherly?', 'voucherly' ) . '</a>', "https://voucherly.it" );
+		
+    return apply_filters( 'woocommerce_gateway_icon', $icon_html, $this->id );
+	}
 
 
   // START finalize_orders
@@ -401,7 +450,6 @@ class Voucherly extends WC_Payment_Gateway
   private static function getVoucherlyCustomerUserMetaKey(): string
   {
     return "voucherly_customer_" . \VoucherlyApi\Api::getEnvironment();
-    ;
   }
 
 

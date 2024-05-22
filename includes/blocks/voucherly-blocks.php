@@ -77,7 +77,12 @@ final class Voucherly_Blocks extends AbstractPaymentMethodType {
             'title'         => Voucherly::TITLE,
             'description'   => Voucherly::DESCRIPTION,
             'icon'          => Voucherly::plugin_url() . '/logo.svg',
+            'icons'         => $this->get_icons(),
             'supports'      => Voucherly::SUPPORTS
         ];
     }
+
+    private function get_icons() {
+		return json_decode($this->settings["gateways_" . \VoucherlyApi\Api::getEnvironment()]);
+	}
 }

@@ -3,12 +3,13 @@ import { sprintf, __ } from '@wordpress/i18n';
 import { registerPaymentMethod } from '@woocommerce/blocks-registry';
 import { decodeEntities } from '@wordpress/html-entities';
 import { getSetting } from '@woocommerce/settings';
+import { getBlocksConfiguration } from './utils';
 
-const settings = getSetting( 'voucherly_data', {} );
+const settings = getBlocksConfiguration();
 
-const iconUrl = settings.icon;
+const icon = settings.icon;
 
-const label = decodeEntities( settings.title ) || "Voucherly";
+const labelText = decodeEntities( settings.title ) || "Voucherly";
 /**
  * Content component
  */
@@ -21,9 +22,19 @@ const Content = () => {
  * @param {*} props Props from payment API.
  */
 const Label = ( props ) => {
-	const { PaymentMethodLabel } = props.components;
-	const icon = <img src={iconUrl} alt={label} name={label} />
-	return <PaymentMethodLabel text={label} icon={icon} />;
+	const { PaymentMethodLabel, PaymentMethodIcons } = props.components;
+
+	var icons = getBlocksConfiguration().icons ?? [];
+	if (icons.length > 0) {
+
+		return <div style={{display: "flex", flexDirection: "row-reverse"}}>
+			{ labelText }
+			<PaymentMethodIcons icons={ icons } align="left" />
+		</div>;
+	}
+		
+	const iconElement = <img src={ icon } alt="Voucherly" name="Voucherly" />
+	return <PaymentMethodLabel text={ labelText } icon={ iconElement } />;
 };
 
 /**
@@ -35,11 +46,11 @@ const Voucherly = {
 	content: <Content />,
 	edit: <Content />,
 	canMakePayment: () => true,
-	ariaLabel: label,
+	ariaLabel: "Voucherly",
 	supports: {
 		features: settings.supports,
 	},
-	icon: settings.icon
+	icon: icon
 };
 
 registerPaymentMethod( Voucherly );

@@ -34,3 +34,5 @@ require_once(dirname(__FILE__) . "/lib/Payment/Payment.php");
 require_once(dirname(__FILE__) . "/lib/Payment/CreatePayment/CreatePaymentRequest.php");
 require_once(dirname(__FILE__) . "/lib/Payment/CreatePayment/CreatePaymentRequestDiscount.php");
 require_once(dirname(__FILE__) . "/lib/Payment/CreatePayment/CreatePaymentRequestLine.php");
+
+require_once(dirname(__FILE__) . "/lib/PaymentGateway/PaymentGateway.php");
