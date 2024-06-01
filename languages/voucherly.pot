@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2024-05-22T04:11:40+02:00\n"
+"POT-Creation-Date: 2024-05-22T04:31:39+02:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.10.0\n"
 "X-Domain: voucherly\n"
@@ -100,12 +100,12 @@ msgid "Voucherly is not correctly configured, get an API key in developer sectio
 msgstr ""
 
 #. translators: %s is replaced with form label (API key)
-#: voucherly.php:265
+#: voucherly.php:263
 msgid "The \"%s\" is invalid"
 msgstr ""
 
 #. translators: %s is replaced with form label (API key)
-#: voucherly.php:282
+#: voucherly.php:280
 msgid "An error occurred for \"%s\""
 msgstr ""
 

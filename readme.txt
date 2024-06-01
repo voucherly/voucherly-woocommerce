@@ -1,6 +1,6 @@
 === Voucherly ===
 Contributors: voucherly
-Tags: woocommerce, voucherly, buoni pasto, edenred, pellegrini
+Tags: woocommerce, buoni pasto, edenred, pellegrini, pluxee, sodexo, yesticket, upday, welfare
 Requires at least: 5.0
 Tested up to: 6.5.0
 Stable tag: 1.0.3
@@ -12,6 +12,7 @@ Accetta pagamenti tramite buoni pasto per il tuo ecommerce grazie a Voucherly. I
 == Description ==
 
 Voucherly ti consente di accettare pagamenti digitali tramite buoni pasto, carte elettroniche e metodi alternativi in modo economico e sicuro. Questo lo rende la soluzione migliore per il tuo business!
+
 Anche per i tuoi clienti sarà un gioco da ragazzi:
 - Seleziona Voucherly nella pagina di checkout.
 - Scegli i tuoi buoni pasto preferiti e decidi l'importo da pagare.
@@ -20,12 +21,12 @@ Anche per i tuoi clienti sarà un gioco da ragazzi:
 
 La semplicità del processo riduce le barriere per i consumatori, con conseguente riduzione dei carrelli abbandonati alla cassa.
 
-Per attivare il servizio, devi completare l'onboarding su https://dashboard.voucherly.it. La registrazione è gratuita, non ci sono costi di attivazione o oneri di disattivazione.
+Per attivare il servizio, devi completare l'onboarding su [https://dashboard.voucherly.it](https://dashboard.voucherly.it). La registrazione è gratuita, non ci sono costi di attivazione o oneri di disattivazione.
 Utilizzando il servizio si accettano integralmente e incodizionatamente:
- - Terms of Service: https://legal.voucherly.it/category/terms-of-service/.
- - Privacy Policy: https://legal.voucherly.it/privacy/privacy-policy/.
+ - [Terms of Service](https://legal.voucherly.it/category/terms-of-service).
+ - [Privacy Policy](https://legal.voucherly.it/privacy/privacy-policy).
  
-Per maggiori informazioni, visita la nostra pagina https://voucherly.it.
+Per maggiori informazioni, visita la nostra pagina [https://voucherly.it](https://voucherly.it).
 
 **Pronto in pochi minuti**
 Crea un nuovo account, inserisci i dati aziendali, configura le modalità di pagamento e inizia subito a incassare.
