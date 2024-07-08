@@ -317,8 +317,7 @@ class Voucherly extends WC_Payment_Gateway
   
 	public function payment_scripts() {
 
-		// wp_register_style( 'voucherly_styles', get_stylesheet_directory_uri().'/assets/css/voucherly-styles.css', [], "1.0.3" );
-		wp_register_style( 'voucherly_styles', plugins_url( '/assets/css/voucherly-styles.css',  __FILE__ ), [], "1.0.3" );
+		wp_register_style( 'voucherly_styles', plugins_url( '/assets/css/voucherly-styles.css',  __FILE__ ), [], "1.0.4" );
 		wp_enqueue_style( 'voucherly_styles' );
 
 	}

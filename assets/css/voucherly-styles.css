@@ -1,12 +1,12 @@
 img.voucherly_icon {
+    display: inline;
     vertical-align: middle;
     height: 24px;
     max-height: 24px;
     max-width: 38px;
     object-fit: contain;
     margin: 0 .25rem .125rem 0;
-    /* padding: .25rem;
-    border: 0.5px solid #ddd; */
+    /* border: 0.5px solid #ddd; */
 }
 
 a.about_voucherly {
