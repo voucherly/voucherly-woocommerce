@@ -50,6 +50,19 @@ class Voucherly extends WC_Payment_Gateway
 
   public function init_form_fields()
   {
+    $categories = get_terms(array(
+        'taxonomy' => 'product_cat',
+        'orderby'    => 'name',
+        'order'      => 'ASC',
+        'hide_empty' => true
+    ));
+
+    $options = [];
+    $options[''] = '';
+    foreach ($categories as $category) {
+      $options[$category->term_id] = $category->name;
+    }
+
     $this->form_fields = array(
       'enabled' => array(
         'title' => __('Enable/Disable', 'voucherly'),
@@ -75,6 +88,13 @@ class Voucherly extends WC_Payment_Gateway
         'type' => 'checkbox',
         'default' => 'no',
         'description' => __('Sandbox Mode can be used to test payments.', 'voucherly')
+      ),
+      'foodCategory' => array(
+        'title' => __('Category for food products', 'voucherly'),
+        'type' => 'select',
+        'default' => '',
+        'options' => $options,
+        'description' => __('Select the category that determines whether a product qualifies as food (eligible for meal voucher payment). If no category is selected, all products will be considered food.', 'voucherly')
       ),
       'shippingAsFood' => array(
         'title' => __('Shipping as food', 'voucherly'),
@@ -241,7 +261,7 @@ class Voucherly extends WC_Payment_Gateway
 
     \VoucherlyApi\Api::setSandbox($this->get_option('sandbox') == "yes");
 
-    $this->get_and_update_payment_gateways();
+    $this->getAndUpdatePaymentGateways();
   }
 
   private function processApiKey($environment): bool
@@ -256,7 +276,7 @@ class Voucherly extends WC_Payment_Gateway
       if (!$ok) {
           return false;
       }
-  }
+    }
 
     $this->update_option($optionKey, $newApiKey);
 
@@ -266,7 +286,6 @@ class Voucherly extends WC_Payment_Gateway
 
     return true;
   }
-
   
   private function echoInvalidApiKey($name) {
     
@@ -274,29 +293,33 @@ class Voucherly extends WC_Payment_Gateway
     /* translators: %s is replaced with form label (API key) */
     echo '<p>' . esc_html( sprintf(__('The "%s" is invalid', 'voucherly'), $name) ) . '</p>';
     echo '</div>';
-  }
+  }  
   
-  private function get_and_update_payment_gateways() 
+  private function getAndUpdatePaymentGateways() 
   {
-    $environment = VoucherlyApi\Api::getEnvironment();
-    $paymentGatewaysResponse = \VoucherlyApi\PaymentGateway\PaymentGateway::list();
-    $paymentGateways = $paymentGatewaysResponse->items; 
-    $gateways = [];
+    $gateways = $this->getPaymentGateways();
+    $this->update_option('gateways_'. VoucherlyApi\Api::getEnvironment(), json_encode($gateways));
+  }  
 
-    foreach ($paymentGateways as $gateway) {
+  private function getPaymentGateways() 
+  {
+      $paymentGatewaysResponse = \VoucherlyApi\PaymentGateway\PaymentGateway::list();
+      $paymentGateways = $paymentGatewaysResponse->items; 
+      $gateways = [];
 
-      if ( $gateway->isActive && !$gateway->merchantConfiguration->isFallback ) {
+      foreach ($paymentGateways as $gateway) {
 
-        $formattedGateway["id"] = $gateway->id;
-        $formattedGateway["src"] = $gateway->icon ?? $gateway->checkoutImage;
-        $formattedGateway["alt"] = $gateway->name;
+          if ($gateway->isActive && !$gateway->merchantConfiguration->isFallback ) {
 
-        $gateways[] = $formattedGateway;
+              $formattedGateway["id"] = $gateway->id;
+              $formattedGateway["src"] = $gateway->icon ?? $gateway->checkoutImage;
+              $formattedGateway["alt"] = $gateway->name;
+
+              $gateways[] = $formattedGateway;
+          }
       }
-    }
 
-    $this->update_option('gateways_'. $environment, json_encode($gateways));
-    
+      return $gateways;
   }
 
   public function is_available()
@@ -309,7 +332,7 @@ class Voucherly extends WC_Payment_Gateway
   
 	public function payment_scripts() {
 
-		wp_register_style( 'voucherly_styles', plugins_url( '/assets/css/voucherly-styles.css',  __FILE__ ), [], "1.0.4" );
+		wp_register_style( 'voucherly_styles', plugins_url( '/assets/css/voucherly-styles.css',  __FILE__ ), [], "1.1.0" );
 		wp_enqueue_style( 'voucherly_styles' );
 
 	}
@@ -434,7 +457,7 @@ class Voucherly extends WC_Payment_Gateway
     if ($this->get_option('enabled') === 'yes') {
       try {
 
-        $this->get_and_update_payment_gateways();
+        $this->getAndUpdatePaymentGateways();
 
       } catch (\Exception $e) {
         if (function_exists('wc_get_logger')) {
@@ -560,6 +583,8 @@ class Voucherly extends WC_Payment_Gateway
 
     $cart_items = WC()->cart->get_cart();
 
+    $foodCategoryId = $this->get_option('foodCategory');
+
     foreach ($cart_items as $key => $item) {
 
       $product = wc_get_product($item['product_id']);
@@ -574,18 +599,10 @@ class Voucherly extends WC_Payment_Gateway
       $line->quantity = $item['quantity'];
       $line->isFood = true;
 
-      // return get_terms(array(
-      //   'taxonomy' => 'product_cat',
-      //   'hide_empty' => $hide_empty
-      // ));
-
-      // foreach ($product->get_category_ids() as $category_id) {
-
-      //   if ($categoryHelper->isFood($category_id)) {
-      //     $line->isFood = true;
-      //     break;
-      //   }
-      // }
+      if (isset($foodCategoryId) && !empty($foodCategoryId)) {
+        $categorys = $product->get_category_ids();
+        $line->isFood = in_array($foodCategoryId, $categorys);
+      }
 
       $lines[] = $line;
     }

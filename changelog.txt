@@ -1,4 +1,7 @@
 == Changelog ==
+= 1.1.0 =
+* Category for food products
+
 = 1.0.4 =
 * Tested up to 6.6.0
 

@@ -3,7 +3,7 @@ Contributors: voucherly
 Tags: woocommerce, buoni pasto, edenred, pellegrini, pluxee, sodexo, yesticket, upday, welfare
 Requires at least: 5.0
 Tested up to: 6.6.0
-Stable tag: 1.0.4
+Stable tag: 1.1.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -38,5 +38,5 @@ Aumenta le tue vendite attirando nuovi clienti interessati a spendere i propri b
 Monitora i flussi di vendita, genera report e gestisci l'operatività direttamente da un'unica interfaccia.
 
 == Changelog ==
-= 1.0.4 =
-* Tested up to 6.6.0
+= 1.1.0 =
+* Category for food products
