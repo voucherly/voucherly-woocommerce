@@ -27,7 +27,7 @@ msgstr ""
 
 #. Description of the plugin
 #: D:\source\voucherly\voucherly-woocommerce\woocommerce-gateway-voucherly.php
-msgid "Accetta pagamenti tramite buoni pasto per il tuo ecommerce. Non perdere neanche una vendita, incassa online in totale sicurezza e in qualsiasi modalità. Il modo migliore per usare i buoni pasto!"
+msgid "Accetta buoni pasto con il tuo ecommerce. Non perdere neanche una vendita, incassa online in totale sicurezza e in qualsiasi modalità. Il modo migliore per usare i buoni pasto!"
 msgstr ""
 
 #. Author URI of the plugin

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Voucherly
  * Plugin URI: https://voucherly.it/
- * Description: Accetta pagamenti tramite buoni pasto per il tuo ecommerce. Non perdere neanche una vendita, incassa online in totale sicurezza e in qualsiasi modalità. Il modo migliore per usare i buoni pasto!
+ * Description: Accetta buoni pasto con il tuo ecommerce. Non perdere neanche una vendita, incassa online in totale sicurezza e in qualsiasi modalità. Il modo migliore per usare i buoni pasto!
  * Author: Voucherly
  * Author URI: voucherly.it
  * Version: 1.1.0
