@@ -20,15 +20,12 @@
  * @copyright 2024 Voucherly
  * @license   https://opensource.org/license/gpl-3-0/ GNU General Public License version 3 (GPL-3.0)
  */
+header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
 
-require_once dirname(__FILE__) . '/lib/Api.php';
-require_once dirname(__FILE__) . '/lib/NotSuccessException.php';
-require_once dirname(__FILE__) . '/lib/Request.php';
-require_once dirname(__FILE__) . '/lib/PaymentHelper.php';
+header('Cache-Control: no-store, no-cache, must-revalidate');
+header('Cache-Control: post-check=0, pre-check=0', false);
+header('Pragma: no-cache');
 
-require_once dirname(__FILE__) . '/lib/Payment/Payment.php';
-require_once dirname(__FILE__) . '/lib/Payment/CreatePayment/CreatePaymentRequest.php';
-require_once dirname(__FILE__) . '/lib/Payment/CreatePayment/CreatePaymentRequestDiscount.php';
-require_once dirname(__FILE__) . '/lib/Payment/CreatePayment/CreatePaymentRequestLine.php';
-
-require_once dirname(__FILE__) . '/lib/PaymentGateway/PaymentGateway.php';
+header('Location: ../');
+exit;

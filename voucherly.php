@@ -17,13 +17,10 @@ class Voucherly extends WC_Payment_Gateway
 
   public function __construct()
   {
-    // if ((!empty($_GET['section'])) && ($_GET['section'] == 'voucherly')) {
-    //   $GLOBALS['hide_save_button'] = false;
-    // }
-
+    
     $this->id                 = "voucherly";
     $this->method_title       = "Voucherly";
-    $this->method_description = "Accetta pagamenti tramite buoni pasto per il tuo ecommerce. Non perdere neanche una vendita, incassa online in totale sicurezza e in qualsiasi modalità.";
+    $this->method_description = "Accetta buoni pasto con il tuo ecommerce. Non perdere neanche una vendita, incassa online in totale sicurezza e in qualsiasi modalità.";
     $this->has_fields         = false;
     $this->supports           = self::SUPPORTS;
 
@@ -39,7 +36,12 @@ class Voucherly extends WC_Payment_Gateway
 
     \VoucherlyApi\Api::setApiKey($this->get_option('apiKey_live'), "live");
     \VoucherlyApi\Api::setApiKey($this->get_option('apiKey_sand'), "sand");
-    \VoucherlyApi\Api::setSandbox($this->get_option('sandbox'));    
+    \VoucherlyApi\Api::setSandbox($this->get_option('sandbox') == "yes");
+    
+    \VoucherlyApi\Api::setPluginNameHeader('WooCommerce');
+    // \VoucherlyApi\Api::setPluginVersionHeader($this->version);
+    \VoucherlyApi\Api::setPlatformVersionHeader(WC()->version);
+    \VoucherlyApi\Api::setTypeHeader('ECOMMERCE-PLUGIN');
     
     add_action('woocommerce_available_payment_gateways', array($this, 'check_gateway'), 15);
     
@@ -62,7 +64,7 @@ class Voucherly extends WC_Payment_Gateway
         'description' => sprintf(__('Locate API key in developer section on <a href="%s" target="_blank">Voucherly Dashboard</a>.', 'voucherly'), 'https://dashboard.voucherly.it')
       ),
       'apiKey_sand' => array(
-        'title' => 'API key sand',
+        'title' => 'API key sandbox',
         'type' => 'text',
         /* translators: %s is replaced with Voucherly Dashboard link */
         'description' => sprintf(__('Locate API key in developer section on <a href="%s" target="_blank">Voucherly Dashboard</a>.', 'voucherly'), 'https://dashboard.voucherly.it')
@@ -165,9 +167,9 @@ class Voucherly extends WC_Payment_Gateway
         }
 
         $payment = \VoucherlyApi\Payment\Payment::get($paymentId);
-        $order = new WC_Order($payment->metadata->orderId);
 
         if (self::paymentIsPaidOrCaptured($payment)) {
+          $order = new WC_Order($payment->metadata->orderId);
           header('Location: ' . $this->get_return_url($order));
         } else if ($payment->status === 'Voided') {
           header('Location: ' . wc_get_checkout_url());
@@ -176,7 +178,7 @@ class Voucherly extends WC_Payment_Gateway
         }
 
         break;
-      case 's2s':
+      case 'callback':
         $orderId = sanitize_text_field($_GET['orderId']);
         if (!$orderId) {
           header('Location: ' . $this->get_return_url(''));
@@ -199,7 +201,7 @@ class Voucherly extends WC_Payment_Gateway
         exit(
           wp_json_encode(
             array(
-              'isSuccess' => true,
+              'ok' => true,
               'orderId' => $orderId
             )
           )
@@ -220,68 +222,58 @@ class Voucherly extends WC_Payment_Gateway
     return parent::admin_options();
   }
 
+
   public function process_admin_options()
   {
     $liveOk = $this->processApiKey("live");
     if (!$liveOk) {
+      echoInvalidApiKey('API key live');
       return false;
     }
 
     $sandOk = $this->processApiKey("sand");
     if (!$sandOk) {
+      echoInvalidApiKey('API key sandox');
       return false;
     }
 
     parent::process_admin_options();
 
-    \VoucherlyApi\Api::setSandbox($this->get_option('sandbox'));
+    \VoucherlyApi\Api::setSandbox($this->get_option('sandbox') == "yes");
 
     $this->get_and_update_payment_gateways();
   }
 
   private function processApiKey($environment): bool
   {
-
-    $postData = $this->get_post_data();
-
     $optionKey = 'apiKey_' . $environment;
-    $textKey = 'API key ' . $environment;
 
     $apiKey = $this->get_option($optionKey);
-    $newApiKey = $postData['woocommerce_voucherly_' . $optionKey];
-
-    // if (empty($newApiKey) || $newApiKey == $apiKey) {
-    //   return true;
-    // }
-
-    try {
-
-      $ok = \VoucherlyApi\Api::testAuthentication($newApiKey);
-      if ( !$ok ) {
-        echo '<div class="notice-error notice">';
-        /* translators: %s is replaced with form label (API key) */
-        echo '<p>' . esc_html( sprintf(__('The "%s" is invalid', 'voucherly'), $textKey) ) . '</p>';
-        echo '</div>';
-
-        return false;
+    $newApiKey = $this->get_post_data()['woocommerce_voucherly_' . $optionKey];
+    
+    if (!empty($newApiKey)) {
+      $ok = VoucherlyApi\Api::testAuthentication($newApiKey);
+      if (!$ok) {
+          return false;
       }
+  }
 
-      $this->update_option($optionKey, $newApiKey);
+    $this->update_option($optionKey, $newApiKey);
 
-      \VoucherlyApi\Api::setApiKey($newApiKey, $environment);
+    \VoucherlyApi\Api::setApiKey($newApiKey, $environment);
 
-      // Delete user metadata (?)
+    // Should I delete user metadata?
 
-      return true;
+    return true;
+  }
 
-    } catch (\Exception $ex) {
-      echo '<div class="notice-error notice">';
-      /* translators: %s is replaced with form label (API key) */
-      echo '<p>' . esc_html( sprintf(__('An error occurred for "%s"', 'voucherly'), $textKey) ) . '</p>';
-      echo '</div>';
-
-      return false;
-    }
+  
+  private function echoInvalidApiKey($name) {
+    
+    echo '<div class="notice-error notice">';
+    /* translators: %s is replaced with form label (API key) */
+    echo '<p>' . esc_html( sprintf(__('The "%s" is invalid', 'voucherly'), $name) ) . '</p>';
+    echo '</div>';
   }
   
   private function get_and_update_payment_gateways() 
@@ -536,19 +528,21 @@ class Voucherly extends WC_Payment_Gateway
     $request->customerEmail = $order->get_billing_email();
 
     $apiUrl = WC()->api_request_url('WC_Gateway_Voucherly');
-    $request->s2SUrl = add_query_arg(
-      array(
-        'action' => 's2s',
-        'orderId' => $order_id,
-      ), $apiUrl);
 
     // orderId passed by session
     $redirectUrl = add_query_arg(
       array(
         'action' => 'redirect',
       ), $apiUrl);
-    $request->redirectSuccessUrl = $redirectUrl;
-    $request->redirectErrorUrl = $redirectUrl;
+    $request->redirectOkUrl = $redirectUrl;
+    $request->redirectKoUrl = $redirectUrl;
+
+    $callbackUrl = add_query_arg(
+      array(
+        'action' => 'callback',
+        'orderId' => $order_id,
+      ), $apiUrl);
+    $request->callbackUrl = $callbackUrl;
 
     $request->shippingAddress = $order->get_formatted_billing_address();
     $request->country = $order->get_billing_country();
