@@ -33,11 +33,12 @@ class Voucherly extends WC_Payment_Gateway
     add_action('woocommerce_api_wc_gateway_' . $this->id, array($this, 'gateway_api'));
 
     $this->loadVoucherlyApiKey();
-    
-    \VoucherlyApi\Api::setPluginNameHeader('WooCommerce');
-    // \VoucherlyApi\Api::setPluginVersionHeader($this->version);
-    \VoucherlyApi\Api::setPlatformVersionHeader(WC()->version);
-    \VoucherlyApi\Api::setTypeHeader('ECOMMERCE-PLUGIN');
+
+    \VoucherlyApi\Api::setOsNameHeader("WooCommerce");
+    \VoucherlyApi\Api::setOsVersionHeader(WC()->version);
+    \VoucherlyApi\Api::setAppNameHeader('voucherly-woocommerce');
+    \VoucherlyApi\Api::setAppVersionHeader(get_plugin_data(__DIR__)['Version']);
+    \VoucherlyApi\Api::setDeviceTypeHeader('ECOMMERCE-PLUGIN');
     
     add_action('woocommerce_available_payment_gateways', array($this, 'check_gateway'), 15);
     
