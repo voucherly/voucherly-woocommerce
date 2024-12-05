@@ -10,7 +10,7 @@ use VoucherlyApi\PaymentHelper;
 
 defined('ABSPATH') || exit;
 
-require_once __DIR__.'/voucherly-sdk/init.php';
+require_once __DIR__.'/vendor/autoload.php';
 
 class voucherly extends WC_Payment_Gateway
 {
@@ -182,25 +182,31 @@ class voucherly extends WC_Payment_Gateway
 
         switch ($_GET['action']) {
             case 'redirect':
-                $success = $_GET['success'];
-                $status = $_GET['status'];
-                if (!isset($success) || !isset($status) || 'Voided' === $status) {
+                if (!isset($_GET['success']) || !isset($_GET['status'])) {
                     header('Location: '.wc_get_checkout_url());
 
                     exit;
                 }
 
-                $paymentId = $_GET['paymentId'];
-                if (!isset($paymentId)) {
-                    $paymentId = $_GET['payment_Id'];
-                    if (!isset($paymentId)) {
-                        $paymentId = $_GET['p'];
-                        if (!isset($paymentId)) {
-                            header('Location: '.$this->get_return_url(''));
+                $success = sanitize_text_field(wp_unslash($_GET['success']));
+                $status = sanitize_text_field(wp_unslash($_GET['status']));
 
-                            exit;
-                        }
-                    }
+                if ('Voided' === $status) {
+                    header('Location: '.wc_get_checkout_url());
+
+                    exit;
+                }
+
+                if (isset($_GET['paymentId'])) {
+                    $paymentId = sanitize_text_field(wp_unslash($_GET['paymentId']));
+                } elseif (isset($_GET['payment_Id'])) {
+                    $paymentId = sanitize_text_field(wp_unslash($_GET['payment_Id']));
+                } elseif (isset($_GET['p'])) {
+                    $paymentId = sanitize_text_field(wp_unslash($_GET['p']));
+                } else {
+                    header('Location: '.$this->get_return_url(''));
+
+                    exit;
                 }
 
                 $payment = Payment::get($paymentId);
@@ -364,6 +370,7 @@ class voucherly extends WC_Payment_Gateway
             return '';
         }
 
+        $icon_html = '';
         foreach ($gateways as $i) {
             $icon_html .= '<img src="'.esc_attr($i->src).'" alt="'.esc_attr($i->alt).'" class="voucherly_icon" />';
         }
@@ -527,7 +534,7 @@ class voucherly extends WC_Payment_Gateway
     private function getAndUpdatePaymentGateways()
     {
         $gateways = $this->getPaymentGateways();
-        $this->update_option('gateways', json_encode($gateways));
+        $this->update_option('gateways', wp_json_encode($gateways));
     }
 
     private function getPaymentGateways()
@@ -647,6 +654,12 @@ class voucherly extends WC_Payment_Gateway
             }
             $line->quantity = $item['quantity'];
             $line->isFood = true;
+
+            // $tax_class = $product->get_tax_class();
+            // $tax_rates = WC_Tax::get_rates( $tax_class );
+            // if ( ! empty( $tax_rates ) ) {
+            //   $line->taxRate = reset( $tax_rates )['rate'];
+            // }
 
             if (isset($foodCategoryId) && !empty($foodCategoryId)) {
                 $categorys = $product->get_category_ids();

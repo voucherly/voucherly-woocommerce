@@ -16,6 +16,7 @@ del /q _cache_voucherly\voucherly\.DS_Store
 cd _cache_voucherly\voucherly
 
 for /r %%i in (*.DS_Store) do del "%%i"
+
 call composer install --no-dev --optimize-autoloader
 
 cd ..

@@ -3,18 +3,18 @@
 use Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry;
 use Automattic\WooCommerce\Utilities\FeaturesUtil;
 
-/**
+/*
  * Plugin Name: Voucherly
- * Plugin URI: https://voucherly.it/
+ * Plugin URI: https://github.com/voucherly/voucherly-woocommerce
  * Description: Accetta buoni pasto con il tuo ecommerce. Non perdere neanche una vendita, incassa online in totale sicurezza e in qualsiasi modalità. Il modo migliore per usare i buoni pasto!
  * Author: Voucherly
- * Author URI: voucherly.it
+ * Author URI: https://voucherly.it/
  * Version: 1.1.0
  * Requires Plugins: woocommerce
  * Requires at least: 5.0
  * Tested up to: 6.6.0
  * Text Domain: voucherly
- * Domain Path: /i18n/languages/
+ * Domain Path: /languages/
  * License: GPLv3 or later
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html.
  */
