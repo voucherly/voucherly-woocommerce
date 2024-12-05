@@ -83,6 +83,6 @@ final class Voucherly_Blocks extends AbstractPaymentMethodType {
     }
 
     private function get_icons() {
-		return json_decode($this->settings["gateways_" . \VoucherlyApi\Api::getEnvironment()]);
+		return json_decode($this->settings["gateways"]);
 	}
 }

@@ -5,9 +5,7 @@ defined( 'ABSPATH' ) || exit;
 require_once (__DIR__ . '/voucherly-sdk/init.php');
 
 class Voucherly extends WC_Payment_Gateway
-{
-  const SessionPaymentIdKey = 'voucherly_payment_id';
-  
+{  
   const TITLE = 'Voucherly (carte di pagamento, buoni pasto e altri metodi)';
   const DESCRIPTION = 'Verrai reindirizzato al portale di Voucherly dove potrai pagare con i tuoi buoni pasto o con carta di credito.';
   const SUPPORTS = array(
@@ -34,9 +32,7 @@ class Voucherly extends WC_Payment_Gateway
     add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
     add_action('woocommerce_api_wc_gateway_' . $this->id, array($this, 'gateway_api'));
 
-    \VoucherlyApi\Api::setApiKey($this->get_option('apiKey_live'), "live");
-    \VoucherlyApi\Api::setApiKey($this->get_option('apiKey_sand'), "sand");
-    \VoucherlyApi\Api::setSandbox($this->get_option('sandbox') == "yes");
+    $this->loadVoucherlyApiKey();
     
     \VoucherlyApi\Api::setPluginNameHeader('WooCommerce');
     // \VoucherlyApi\Api::setPluginVersionHeader($this->version);
@@ -46,6 +42,19 @@ class Voucherly extends WC_Payment_Gateway
     add_action('woocommerce_available_payment_gateways', array($this, 'check_gateway'), 15);
     
 		add_action( 'wp_enqueue_scripts', [ $this, 'payment_scripts' ] );
+  }
+  
+
+  private function loadVoucherlyApiKey()
+  {
+      if ($this->get_option('sandbox') == "yes")
+      {
+          VoucherlyApi\Api::setApiKey($this->get_option('apiKey_sand'));
+      }
+      else
+      {
+          VoucherlyApi\Api::setApiKey($this->get_option('apiKey_live'));
+      }
   }
 
   public function init_form_fields()
@@ -130,9 +139,7 @@ class Voucherly extends WC_Payment_Gateway
 
     try {
       $order->set_transaction_id($payment->id);
-      $order->update_meta_data('voucherly_environment', \VoucherlyApi\Api::getEnvironment());
-
-      WC()->session->set(self::SessionPaymentIdKey, $payment->id);
+      $order->update_meta_data('voucherly_environment', $payment->tenant);
 
       update_user_meta(get_current_user_id(), $this->getVoucherlyCustomerUserMetaKey(), $payment->customerId);
 
@@ -180,44 +187,102 @@ class Voucherly extends WC_Payment_Gateway
 
     switch ( $_GET['action'] ) {
       case 'redirect':
-        $paymentId = WC()->session->get(self::SessionPaymentIdKey);
-        if (!$paymentId) {
-          header('Location: ' . $this->get_return_url(''));
-          break;
+        
+        $success = $_GET['success'];
+        $status = $_GET['status'];
+        if (!isset($success) || !isset($status) || $status == 'Voided')
+        {
+          header('Location: ' . wc_get_checkout_url());
+          exit;
+        }
+
+        $paymentId = $_GET["paymentId"];
+        if (!isset($paymentId)){            
+            $paymentId = $_GET["payment_Id"];
+            if (!isset($paymentId)){
+                $paymentId = $_GET["p"];
+                if (!isset($paymentId)){
+                  header('Location: ' . $this->get_return_url(''));
+                    exit;
+                }
+            }
         }
 
         $payment = \VoucherlyApi\Payment\Payment::get($paymentId);
-
-        if (self::paymentIsPaidOrCaptured($payment)) {
-          $order = new WC_Order($payment->metadata->orderId);
-          header('Location: ' . $this->get_return_url($order));
-        } else if ($payment->status === 'Voided') {
-          header('Location: ' . wc_get_checkout_url());
-        } else {
-          header('Location: ' . wc_get_cart_url());
+        if (!VoucherlyApi\PaymentHelper::isPaidOrCaptured($payment)) {
+            // $this->warning[] = $this->l('An error occurred during the operation. Don\'t worry, the payment has already been reversed. If you need any assistance, please contact customer service.');
+            header('Location: ' . wc_get_checkout_url());
+            exit;
         }
+
+        $order = new WC_Order($payment->metadata->orderId);
+        header('Location: ' . $this->get_return_url($order));
 
         break;
       case 'callback':
-        $orderId = sanitize_text_field($_GET['orderId']);
-        if (!$orderId) {
-          header('Location: ' . $this->get_return_url(''));
-          break;
+        
+        $rawBody = file_get_contents('php://input');
+        $params = json_decode($rawBody, true);
+        if (json_last_error() !== JSON_ERROR_NONE || !isset($params['id'])) {
+            exit('Invalid JSON body');
         }
 
+        $paymentId = $params['id'];
+        $payment = \VoucherlyApi\Payment\Payment::get($paymentId);
+        if (!VoucherlyApi\PaymentHelper::isPaidOrCaptured($payment)) {
+          header('Content-Type: application/json');
+          exit(
+            wp_json_encode(
+              array(
+                'ok' => false,
+                'error' => 'Payment is not paid or captured',
+              )
+            )
+          );
+        }
+        
+        if ($payment->mode != 'Payment') {
+          header('Content-Type: application/json');
+          exit(
+            wp_json_encode(
+              array(
+                'ok' => true,
+              )
+            )
+          );
+        }
+
+        $orderId = $payment->metadata->orderId;
         $order = new WC_Order($orderId);
+        
         if ($order->has_status(wc_get_is_paid_statuses())) {
-          exit;
+
+          header('Content-Type: application/json');
+          if ($order->get_transaction_id() == $paymentId){
+            exit(
+              wp_json_encode(
+                array(
+                  'ok' => true,
+                  'orderId' => $orderId
+                )
+              )
+            );
+          }
+          else{
+            exit(
+              wp_json_encode(
+                array(
+                  'ok' => false,
+                  'stop' => true,
+                  'error' => 'WooCommerce order already paid with different payment method',
+                )
+              )
+            );
+          }
         }
 
-        $payment = \VoucherlyApi\Payment\Payment::get($order->get_transaction_id());
-        if (!self::paymentIsPaidOrCaptured($payment)) {
-          exit;
-        }
+        $order->payment_complete($paymentId);
 
-        $order->payment_complete($payment->id);
-
-        header('Content-Type: application/json');
         exit(
           wp_json_encode(
             array(
@@ -259,7 +324,7 @@ class Voucherly extends WC_Payment_Gateway
 
     parent::process_admin_options();
 
-    \VoucherlyApi\Api::setSandbox($this->get_option('sandbox') == "yes");
+    $this->loadVoucherlyApiKey();
 
     $this->getAndUpdatePaymentGateways();
   }
@@ -280,8 +345,6 @@ class Voucherly extends WC_Payment_Gateway
 
     $this->update_option($optionKey, $newApiKey);
 
-    \VoucherlyApi\Api::setApiKey($newApiKey, $environment);
-
     // Should I delete user metadata?
 
     return true;
@@ -298,7 +361,7 @@ class Voucherly extends WC_Payment_Gateway
   private function getAndUpdatePaymentGateways() 
   {
     $gateways = $this->getPaymentGateways();
-    $this->update_option('gateways_'. VoucherlyApi\Api::getEnvironment(), json_encode($gateways));
+    $this->update_option('gateways', json_encode($gateways));
   }  
 
   private function getPaymentGateways() 
@@ -354,7 +417,7 @@ class Voucherly extends WC_Payment_Gateway
 	 */
 	public function get_icon() {
     
-    $gateways = json_decode($this->get_option('gateways_'. \VoucherlyApi\Api::getEnvironment()));
+    $gateways = json_decode($this->get_option('gateways'));
     if ( !isset($gateways) )
     {
       return '';
@@ -392,7 +455,7 @@ class Voucherly extends WC_Payment_Gateway
             if (!isset($transactionId)) {
               continue;
             }
-            //callback logic
+            
             $payment = VoucherlyApi\Payment\Payment::get($transactionId);
             if ($order->has_status(wc_get_is_paid_statuses())) {
               continue;
@@ -471,24 +534,6 @@ class Voucherly extends WC_Payment_Gateway
     }
   }
 
-  /**
-   * 
-   */
-  private static function paymentIsVoided($payment): bool
-  {
-    return $payment->status === 'Voided';
-  }
-
-  private static function paymentIsPaidOrCaptured($payment): bool
-  {
-    return $payment->status === 'Confirmed' || $payment->status === 'Captured' || $payment->status === 'Paid';
-  }
-
-  private static function getVoucherlyCustomerUserMetaKey(): string
-  {
-    return "voucherly_customer_" . \VoucherlyApi\Api::getEnvironment();
-  }
-
 
   /**
    * Plugin url.
@@ -534,18 +579,13 @@ class Voucherly extends WC_Payment_Gateway
 
   private function getPaymentRequest(WC_Order $order)
   {
-
-    $order_id = $order->get_id();
-
     $request = new \VoucherlyApi\Payment\CreatePaymentRequest;
-    $request->metadata = array(
-      "orderId" => strval($order_id)
-    );
-
-    $customerId = get_user_meta(get_current_user_id(), $this->getVoucherlyCustomerUserMetaKey(), true);
-    if ($customerId != '') {
-      $request->customerId = $customerId;
-    }
+    
+    $voucherlyCustomerId = get_user_meta(get_current_user_id(), $this->getVoucherlyCustomerUserMetaKey(), true);
+    if (isset($voucherlyCustomerId) && !empty($voucherlyCustomerId)) {
+      $request->customerId = $voucherlyCustomerId;
+    } 
+    
     $request->customerFirstName = $order->get_billing_first_name();
     $request->customerLastName = $order->get_billing_last_name();
     $request->customerEmail = $order->get_billing_email();
@@ -562,14 +602,17 @@ class Voucherly extends WC_Payment_Gateway
 
     $callbackUrl = add_query_arg(
       array(
-        'action' => 'callback',
-        'orderId' => $order_id,
+        'action' => 'callback'
       ), $apiUrl);
     $request->callbackUrl = $callbackUrl;
 
     $request->shippingAddress = $order->get_formatted_billing_address();
     $request->country = $order->get_billing_country();
     $request->language = explode('_', get_locale())[0];
+
+    $request->metadata = array(
+      "orderId" => strval($order->get_id())
+    );
 
     $request->lines = $this->getPaymentLines($order);
     $request->discounts = $this->getPaymentDiscounts();
@@ -648,6 +691,11 @@ class Voucherly extends WC_Payment_Gateway
     }
 
     return $discounts;
+  }
+
+  private function getVoucherlyCustomerUserMetaKey(): string
+  {
+    return "voucherly_customer_" . $this->get_option('sandbox') == "yes" ? "sand" : "live";
   }
 }
 
