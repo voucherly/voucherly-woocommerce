@@ -5,8 +5,7 @@ img.voucherly_icon {
     max-height: 48px;
     max-width: 48px;
     object-fit: contain;
-    margin: 0 .25rem .125rem 0;
-    /* border: 0.5px solid #ddd; */
+    margin: 0 .25rem .125rem .25rem;
 }
 
 a.about_voucherly {
