@@ -49,6 +49,8 @@ const Voucherly = {
 	ariaLabel: "Voucherly",
 	supports: {
 		features: settings.supports,
+		showSavedCards: settings.showSavedCards,
+		showSaveOption: settings.showSaveOption,
 	},
 	icon: icon
 };
