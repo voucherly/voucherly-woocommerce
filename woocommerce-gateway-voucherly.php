@@ -70,6 +70,17 @@ function voucherly_init()
         return array_merge($pluginLinks, $links);
     }
 
+    add_filter('woocommerce_get_customer_payment_tokens', 'voucherly_get_customer_payment_tokens', 10, 3);
+    function voucherly_get_customer_payment_tokens($tokens, $customer_id, $gateway_id)
+    {
+        $filteredTokens = (new Voucherly())->getVoucherlyCustomerPaymentMethodsAsWoocommercePaymentTokens($customer_id, $gateway_id);
+        if (!empty($filteredTokens)) {
+            $tokens = $filteredTokens;
+        }
+
+        return $tokens;
+    }
+
     add_action('voucherly_finalize_orders_event', 'voucherly_finalize_orders');
     function voucherly_finalize_orders()
     {

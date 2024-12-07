@@ -16,7 +16,7 @@
 	},
 	"scripts": {
 		"start": "wp-scripts start",
-		"build": "wp-scripts build && npm run i18n:build",
+		"build": "wp-scripts build",
 		"i18n": "npm run i18n:build",
 		"i18n:build": "npm run i18n:pot && ./scripts/build_i18n.sh",
 		"i18n:pot": "wp i18n make-pot . languages/voucherly.pot --slug=voucherly --exclude=\"node_modules/,tmp-svn/,tmp-plugin/,languages/,assets/\"",

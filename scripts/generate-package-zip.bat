@@ -5,6 +5,9 @@ echo 🏁 Start generate zip for deploy
 
 call composer install
 
+call npm run build
+call vendor/bin/php-cs-fixer fix
+
 cd ..
 if exist _cache_voucherly rmdir /s /q _cache_voucherly
 mkdir "_cache_voucherly"

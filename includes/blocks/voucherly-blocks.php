@@ -53,7 +53,7 @@ final class Voucherly_Blocks extends AbstractPaymentMethodType
             ? require ($script_asset_path)
             : [
                 'dependencies' => [],
-                'version' => '1.2.0',
+                'version' => '1.4.0',
             ];
         $script_url = Voucherly::plugin_url().$script_path;
 
@@ -84,7 +84,7 @@ final class Voucherly_Blocks extends AbstractPaymentMethodType
             'description' => Voucherly::DESCRIPTION,
             'icon' => Voucherly::plugin_url().'/logo.svg',
             'icons' => $this->get_icons(),
-            'supports' => Voucherly::SUPPORTS,
+            'supports' => array_merge(Voucherly::SUPPORTS, ['tokenization']),
             'showSavedCards' => true,
             'showSaveOption' => false,
         ];

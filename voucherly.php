@@ -1,6 +1,7 @@
 <?php
 
 use VoucherlyApi\Api;
+use VoucherlyApi\Customer\Customer;
 use VoucherlyApi\Payment\CreatePaymentRequest;
 use VoucherlyApi\Payment\CreatePaymentRequestDiscount;
 use VoucherlyApi\Payment\CreatePaymentRequestLine;
@@ -12,7 +13,7 @@ defined('ABSPATH') || exit;
 
 require_once __DIR__.'/vendor/autoload.php';
 
-class Voucherly extends WC_Payment_Gateway
+class voucherly extends WC_Payment_Gateway
 {
     public const TITLE = 'Voucherly (carte di pagamento, buoni pasto e altri metodi)';
     public const DESCRIPTION = 'Verrai reindirizzato al portale di Voucherly dove potrai pagare con i tuoi buoni pasto o con carta di credito.';
@@ -125,63 +126,33 @@ class Voucherly extends WC_Payment_Gateway
         ];
     }
 
+    // Fired by filter woocommerce_get_customer_payment_tokens
+    // It overrides WooCommerce payment tokens (in db)
+    public function getVoucherlyCustomerPaymentMethodsAsWoocommercePaymentTokens($customerId, $gatewayId)
+    {
+        if (!empty($gatewayId) && $gatewayId !== $this->id) {
+            return [];
+        }
+
+        $customerPaymentMethods = $this->getCustomerPaymentMethods($customerId);
+
+        return $this->customerPaymentMethodsToWoocommercePaymentTokens($customerId, $customerPaymentMethods);
+    }
 
     public function payment_fields()
-    {   
-
+    {
         // if (!$this->supports('tokenization') || !is_user_logged_in()) {
         if (!is_user_logged_in()) {
             parent::payment_fields();
+
             return;
         }
 
-        $voucherlyCustomerId = get_user_meta(get_current_user_id(), $this->getVoucherlyCustomerUserMetaKey(), true);
-        if (!isset($voucherlyCustomerId) || empty($voucherlyCustomerId)) {
-            parent::payment_fields();
-            return;
-        }
+        // I can't use them because tokenization is disabled
+        // $this->tokenization_script(); // Load necessary tokenization scripts
+        // $this->saved_payment_methods(); // Display saved payment methods
 
-        $customerPaymentMethods = VoucherlyApi\Customer\Customer::paymentMethods($voucherlyCustomerId)->items;
-        if (empty($customerPaymentMethods)) {
-            parent::payment_fields();
-            exit;
-        }
-
-        echo '<div class="wc-saved-payment-methods">';
-        foreach ($customerPaymentMethods as $customerPaymentMethod) {
-            if (!isset($customerPaymentMethod->creditCard)) {
-                continue;
-            }
-
-            $card = $customerPaymentMethod->creditCard;
-
-            if ($card->expirationMonth < date('m') && $card->expirationYear <= date('Y')) {
-                continue;
-            }
-
-            $brandImagePath = '/assets/images/cards/' . $card->brand . '.png';
-            if (!file_exists(__DIR__ . $brandImagePath)) {
-                $brandImagePath = '/assets/images/cards/default.png';
-            }
-
-            echo '<div>';
-            echo '<input type="radio" id="wc-' . esc_attr($this->id) . '-token-' . esc_attr($customerPaymentMethod->id) . '" ';
-            echo 'name="wc-' . esc_attr($this->id) . '-payment-token" value="' . esc_attr($customerPaymentMethod->id) . '" />';
-            echo '<label for="wc-' . esc_attr($this->id) . '-token-' . esc_attr($customerPaymentMethod->id) . '">';
-            echo $this->getIconHtml(plugins_url($brandImagePath, __FILE__), $card->brand);
-            // echo esc_html(ucfirst($card->brand)). ' ' . esc_html($card->pan);
-            echo esc_html($card->pan);
-            echo '</label>';
-            echo '</div>';
-
-        }
-        echo '<div>';
-        echo '<input type="radio" id="wc-' . esc_attr($this->id) . '-new" name="wc-' . esc_attr($this->id) . '-payment-token" value="new" />';
-        echo '<label for="wc-' . esc_attr($this->id) . '-new">';
-        echo esc_html($this->description);
-        echo '</label>';
-        echo '</div>';
-        echo '</div>';      
+        $this->echoCustomPaymentFieldsForCustomerPaymentMethods(get_current_user_id());
     }
 
     public function process_payment($order_id)
@@ -440,11 +411,6 @@ class Voucherly extends WC_Payment_Gateway
         return apply_filters('woocommerce_gateway_icon', $icon_html, $this->id);
     }
 
-    
-    private function getIconHtml(string $src, string $alt) : string {
-        return '<img src="'.esc_attr($src).'" alt="'.esc_attr($alt).'" class="voucherly_icon" />';
-    }
-
     // START finalize_orders
 
     public function finalize_orders()
@@ -558,6 +524,57 @@ class Voucherly extends WC_Payment_Gateway
         return $gateways;
     }
 
+    private function echoCustomPaymentFieldsForCustomerPaymentMethods($customerId)
+    {
+        $customerPaymentMethods = $this->getCustomerPaymentMethods($customerId);
+        if (empty($customerPaymentMethods)) {
+            parent::payment_fields();
+
+            exit;
+        }
+
+        echo '<div class="wc-saved-payment-methods">';
+        foreach ($customerPaymentMethods as $customerPaymentMethod) {
+            if (!isset($customerPaymentMethod->creditCard)) {
+                continue;
+            }
+
+            $card = $customerPaymentMethod->creditCard;
+
+            if ($card->expirationMonth < date('m') && $card->expirationYear <= date('Y')) {
+                continue;
+            }
+
+            $brandImagePath = '/assets/images/cards/'.$card->brand.'.png';
+            if (!file_exists(__DIR__.$brandImagePath)) {
+                $brandImagePath = '/assets/images/cards/default.png';
+            }
+
+            echo '<div>';
+            echo '<input type="radio" id="wc-'.esc_attr($this->id).'-token-'.esc_attr($customerPaymentMethod->id).'" ';
+            echo 'name="wc-'.esc_attr($this->id).'-payment-token" value="'.esc_attr($customerPaymentMethod->id).'" />';
+            echo '<label for="wc-'.esc_attr($this->id).'-token-'.esc_attr($customerPaymentMethod->id).'">';
+            echo $this->getIconHtml(plugins_url($brandImagePath, __FILE__), $card->brand);
+            // echo esc_html(ucfirst($card->brand)). ' ' . esc_html($card->pan);
+            echo esc_html($card->pan);
+            echo '</label>';
+            echo '</div>';
+        }
+
+        echo '<div>';
+        echo '<input type="radio" id="wc-'.esc_attr($this->id).'-new" name="wc-'.esc_attr($this->id).'-payment-token" value="new" />';
+        echo '<label for="wc-'.esc_attr($this->id).'-new">';
+        echo esc_html($this->description);
+        echo '</label>';
+        echo '</div>';
+        echo '</div>';
+    }
+
+    private function getIconHtml(string $src, string $alt): string
+    {
+        return '<img src="'.esc_attr($src).'" alt="'.esc_attr($alt).'" class="voucherly_icon" />';
+    }
+
     private function loadVoucherlyApiKey()
     {
         if ('yes' === $this->get_option('sandbox')) {
@@ -621,6 +638,52 @@ class Voucherly extends WC_Payment_Gateway
         return $gateways;
     }
 
+    private function getCustomerPaymentMethods($customerId)
+    {
+        $voucherlyCustomerId = get_user_meta($customerId, $this->getVoucherlyCustomerUserMetaKey(), true);
+        if (!isset($voucherlyCustomerId) || empty($voucherlyCustomerId)) {
+            return [];
+        }
+
+        $key = 'voucherly_payment_methods:'.$voucherlyCustomerId;
+        $customerPaymentMethods = get_transient($key);
+        if (false === $customerPaymentMethods) {
+            $customerPaymentMethods = Customer::paymentMethods($voucherlyCustomerId)->items;
+            set_transient($key, $customerPaymentMethods, 60);
+        }
+
+        return $customerPaymentMethods;
+    }
+
+    private function customerPaymentMethodsToWoocommercePaymentTokens($customerId, $customerPaymentMethods)
+    {
+        $tokens = [];
+
+        $index = 0;
+
+        foreach ($customerPaymentMethods as $customerPaymentMethod) {
+            if (isset($customerPaymentMethod->creditCard)) {
+                $card = $customerPaymentMethod->creditCard;
+
+                $token = new WC_Payment_Token_CC();
+                $token->set_id($index);
+                $token->set_token($customerPaymentMethod->id);
+                $token->set_user_id($customerId);
+                $token->set_gateway_id($this->id);
+                $token->set_last4(substr($card->pan, -4));
+                $token->set_expiry_year($card->expirationYear);
+                $token->set_expiry_month($card->expirationMonth);
+                $token->set_card_type($card->brand);
+
+                $tokens[] = $token;
+            }
+
+            $index++;
+        }
+
+        return $tokens;
+    }
+
     /**
      * Get the start criteria for the scheduled datetime.
      */
@@ -656,11 +719,19 @@ class Voucherly extends WC_Payment_Gateway
     {
         $request = new CreatePaymentRequest();
 
-        $voucherlyCustomerId = get_user_meta(get_current_user_id(), $this->getVoucherlyCustomerUserMetaKey(), true);
+        $customerId = get_current_user_id();
+        $voucherlyCustomerId = get_user_meta($customerId, $this->getVoucherlyCustomerUserMetaKey(), true);
         if (isset($voucherlyCustomerId) && !empty($voucherlyCustomerId)) {
-            $paymentTokenKey = 'wc-' . $this->id . '-payment-token';
+            $paymentTokenKey = 'wc-'.$this->id.'-payment-token';
             if (isset($_POST[$paymentTokenKey]) && 'new' !== $_POST[$paymentTokenKey]) {
-                $request->customerPaymentMethodId = sanitize_text_field($_POST[$paymentTokenKey]);
+                $paymentToken = sanitize_text_field($_POST[$paymentTokenKey]);
+                if (is_numeric($paymentToken)) {
+                    $customerPaymentMethods = $this->getCustomerPaymentMethods($customerId);
+                    if (count($customerPaymentMethods) > $paymentToken) {
+                        $paymentToken = $customerPaymentMethods[$paymentToken]->id;
+                    }
+                }
+                $request->customerPaymentMethodId = $paymentToken;
             }
 
             $request->customerId = $voucherlyCustomerId;

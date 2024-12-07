@@ -8,14 +8,6 @@ img.voucherly_icon {
     margin: 0 .25rem .125rem;
 }
 
-.payment_method_voucherly img.voucherly_icon:first-child {
-    margin-left: 0;
-}
-
-.payment_method_voucherly img.voucherly_icon:last-child {
-    margin-right: 0;
-}
-
 .wc-saved-payment-methods  img.voucherly_icon{
     margin-left: 0;
     margin-bottom: 0;
