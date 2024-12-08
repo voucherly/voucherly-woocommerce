@@ -673,7 +673,7 @@ class voucherly extends WC_Payment_Gateway
                 $tokens[] = $token;
             }
 
-            $index++;
+            ++$index;
         }
 
         return $tokens;
@@ -774,51 +774,60 @@ class voucherly extends WC_Payment_Gateway
     {
         $lines = [];
 
-        $cart_items = WC()->cart->get_cart();
-
         $foodCategoryId = $this->get_option('foodCategory');
 
-        foreach ($cart_items as $key => $item) {
+        foreach (WC()->cart->get_cart() as $key => $item) {
             $product = wc_get_product($item['product_id']);
+
+            $quantity = $item['quantity'];
+            $lineNetAmount = $item['line_total'];
+            $unitTotal = round(($lineNetAmount + $item['line_tax']) / $quantity, 2);
+            $lineAmount = $unitTotal * $quantity;
 
             $line = new CreatePaymentRequestLine();
             $line->productName = $product->get_name();
-            $line->productImage = wp_get_attachment_image_src(get_post_thumbnail_id($product->get_id()), 'full')[0];
+            $line->productImage = wp_get_attachment_image_src(get_post_thumbnail_id($item['product_id']), 'full')[0];
             $line->unitAmount = round($product->get_regular_price() * 100);
-            if ($product->get_sale_price()) {
-                $line->unitDiscountAmount = round($line->unitAmount - $product->get_sale_price() * 100);
-            }
-            $line->quantity = $item['quantity'];
-            $line->isFood = true;
-
-            $tax_class = $product->get_tax_class();
-            $tax_rates = WC_Tax::get_rates( $tax_class );
-            if ( ! empty( $tax_rates ) ) {
-              $line->taxRate = reset( $tax_rates )['rate'];
-            }
+            $line->unitDiscountAmount = $line->unitAmount - ($unitTotal * 100);
+            $line->quantity = $quantity;
 
             if (isset($foodCategoryId) && !empty($foodCategoryId)) {
-                $categorys = $product->get_category_ids();
-                $line->isFood = in_array($foodCategoryId, $categorys, true);
+                $line->isFood = in_array($foodCategoryId, $product->get_category_ids(), true);
+            } else {
+                $line->isFood = true;
             }
+
+            $line->taxRate = $this->calculateTaxRate($lineAmount - $lineNetAmount, $lineNetAmount);
 
             $lines[] = $line;
         }
 
-        foreach ($order->get_shipping_methods() as $shipping_method) {
-            $totalWithTax = $shipping_method->get_total() + $shipping_method->get_total_tax();
+        $chosen_shipping_methods = WC()->session->get('chosen_shipping_methods');
 
-            if ($totalWithTax <= 0) {
+        foreach (WC()->shipping()->get_packages() as $package_key => $package) {
+            if (!isset($package['rates']) && empty($package['rates'])) {
                 continue;
             }
+            // Get the chosen shipping method for this package
+            $chosen_method_id = isset($chosen_shipping_methods[$package_key])
+                ? $chosen_shipping_methods[$package_key]
+                : '';
 
-            $shipping = new CreatePaymentRequestLine();
-            $shipping->productName = $shipping_method->get_method_title();
-            $shipping->unitAmount = round($totalWithTax * 100);
-            $shipping->quantity = $shipping_method->get_quantity();
-            $shipping->isFood = 'yes' === $this->get_option('shippingAsFood');
+            if ($chosen_method_id && isset($package['rates'][$chosen_method_id])) {
+                $shipping_method = $package['rates'][$chosen_method_id];
 
-            $lines[] = $shipping;
+                $shippingTaxAmount = $shipping_method->get_shipping_tax();
+                $shippingNetAmount = $shipping_method->get_cost();
+
+                $shipping = new CreatePaymentRequestLine();
+                $shipping->productName = $shipping_method->get_label();
+                $shipping->unitAmount = round(($shippingTaxAmount + $shippingNetAmount) * 100);
+                $shipping->quantity = 1;
+                $shipping->isFood = 'yes' === $this->get_option('shippingAsFood');
+                $shipping->taxRate = $this->calculateTaxRate($shippingTaxAmount, $shippingNetAmount);
+
+                $lines[] = $shipping;
+            }
         }
 
         return $lines;
@@ -843,6 +852,15 @@ class voucherly extends WC_Payment_Gateway
         }
 
         return $discounts;
+    }
+
+    private function calculateTaxRate($taxAmount, $netAmount)
+    {
+        if (0 === $netAmount || 0 === $taxAmount) {
+            return 0.0;
+        }
+
+        return round($taxAmount / $netAmount * 100, 2);
     }
 
     private function getVoucherlyCustomerUserMetaKey(): string
