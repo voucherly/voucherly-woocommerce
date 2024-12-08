@@ -35,6 +35,8 @@ class voucherly extends WC_Payment_Gateway
         $this->description = self::DESCRIPTION;
         $this->icon = plugins_url('/logo.svg', __FILE__);
 
+        $this->view_transaction_url = 'https://dashboard.voucherly.it/pay/payment/details?id=%s';
+
         $this->init_form_fields();
         $this->init_settings();
 
@@ -376,13 +378,6 @@ class voucherly extends WC_Payment_Gateway
     {
         wp_register_style('voucherly_styles', plugins_url('/assets/css/voucherly-styles.css', __FILE__), [], '1.1.0');
         wp_enqueue_style('voucherly_styles');
-    }
-
-    public function get_transaction_url($order)
-    {
-        $this->view_transaction_url = 'https://dashboard.voucherly.it/pay/payment/details?id=%s';
-
-        return parent::get_transaction_url($order);
     }
 
     /**
@@ -796,11 +791,11 @@ class voucherly extends WC_Payment_Gateway
             $line->quantity = $item['quantity'];
             $line->isFood = true;
 
-            // $tax_class = $product->get_tax_class();
-            // $tax_rates = WC_Tax::get_rates( $tax_class );
-            // if ( ! empty( $tax_rates ) ) {
-            //   $line->taxRate = reset( $tax_rates )['rate'];
-            // }
+            $tax_class = $product->get_tax_class();
+            $tax_rates = WC_Tax::get_rates( $tax_class );
+            if ( ! empty( $tax_rates ) ) {
+              $line->taxRate = reset( $tax_rates )['rate'];
+            }
 
             if (isset($foodCategoryId) && !empty($foodCategoryId)) {
                 $categorys = $product->get_category_ids();
