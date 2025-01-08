@@ -12,7 +12,7 @@ use Automattic\WooCommerce\Utilities\FeaturesUtil;
  * Version: 1.1.0
  * Requires Plugins: woocommerce
  * Requires at least: 5.0
- * Tested up to: 6.6.0
+ * Tested up to: 6.7.0
  * Text Domain: voucherly
  * Domain Path: /languages/
  * License: GPLv3 or later

@@ -1,4 +1,4 @@
-# Copyright (C) 2024 Voucherly
+# Copyright (C) 2025 Voucherly
 # This file is distributed under the GPLv3 or later.
 msgid ""
 msgstr ""
@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2024-12-03T12:57:21+01:00\n"
+"POT-Creation-Date: 2025-01-08T15:01:02+01:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.11.0\n"
 "X-Domain: voucherly\n"
@@ -22,7 +22,7 @@ msgstr ""
 
 #. Plugin URI of the plugin
 #: woocommerce-gateway-voucherly.php
-msgid "https://voucherly.it/"
+msgid "https://github.com/voucherly/voucherly-woocommerce"
 msgstr ""
 
 #. Description of the plugin
@@ -32,86 +32,86 @@ msgstr ""
 
 #. Author URI of the plugin
 #: woocommerce-gateway-voucherly.php
-msgid "voucherly.it"
+msgid "https://voucherly.it/"
 msgstr ""
 
-#: voucherly.php:68
+#: voucherly.php:76
 msgid "Enable/Disable"
 msgstr ""
 
-#: voucherly.php:70
+#: voucherly.php:78
 msgid "Enable Voucherly"
 msgstr ""
 
 #. translators: %s is replaced with Voucherly Dashboard link
-#: voucherly.php:77
-#: voucherly.php:83
+#: voucherly.php:85
+#: voucherly.php:91
 msgid "Locate API key in developer section on <a href=\"%s\" target=\"_blank\">Voucherly Dashboard</a>."
 msgstr ""
 
-#: voucherly.php:86
+#: voucherly.php:94
 msgid "Sandbox"
 msgstr ""
 
-#: voucherly.php:87
+#: voucherly.php:95
 msgid "Sandbox Mode"
 msgstr ""
 
-#: voucherly.php:90
+#: voucherly.php:98
 msgid "Sandbox Mode can be used to test payments."
 msgstr ""
 
-#: voucherly.php:93
+#: voucherly.php:101
 msgid "Category for food products"
 msgstr ""
 
-#: voucherly.php:97
+#: voucherly.php:105
 msgid "Select the category that determines whether a product qualifies as food (eligible for meal voucher payment). If no category is selected, all products will be considered food."
 msgstr ""
 
-#: voucherly.php:100
+#: voucherly.php:108
 msgid "Shipping as food"
 msgstr ""
 
-#: voucherly.php:101
+#: voucherly.php:109
 msgid "Consider shipping as food"
 msgstr ""
 
-#: voucherly.php:104
+#: voucherly.php:112
 msgid "If shipping is considered food, the customer can pay for it with meal vouchers."
 msgstr ""
 
-#: voucherly.php:107
+#: voucherly.php:115
 msgid "Finalize unhandled payments"
 msgstr ""
 
-#: voucherly.php:108
+#: voucherly.php:116
 msgid "Enable cron"
 msgstr ""
 
-#: voucherly.php:111
+#: voucherly.php:119
 msgid "Finalize unhandled Voucherly payments with a cron."
 msgstr ""
 
-#: voucherly.php:114
-#: voucherly.php:115
+#: voucherly.php:122
+#: voucherly.php:123
 msgid "Finalize pending payments up to"
 msgstr ""
 
-#: voucherly.php:118
+#: voucherly.php:126
 msgid "Choose a number of hours, default is four and minimum is two."
 msgstr ""
 
 #. translators: %s is replaced with Voucherly Dashboard link
-#: voucherly.php:238
+#: voucherly.php:338
 msgid "Voucherly is not correctly configured, get an API key in developer section on <a href=\"%s\" target=\"_blank\">Voucherly Dashboard</a>."
 msgstr ""
 
 #. translators: %s is replaced with form label (API key)
-#: voucherly.php:294
+#: voucherly.php:607
 msgid "The \"%s\" is invalid"
 msgstr ""
 
-#: woocommerce-gateway-voucherly.php:58
+#: woocommerce-gateway-voucherly.php:67
 msgid "Settings"
 msgstr ""
