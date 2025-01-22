@@ -9,7 +9,7 @@ use Automattic\WooCommerce\Utilities\FeaturesUtil;
  * Description: Accetta buoni pasto con il tuo ecommerce. Non perdere neanche una vendita, incassa online in totale sicurezza e in qualsiasi modalità. Il modo migliore per usare i buoni pasto!
  * Author: Voucherly
  * Author URI: https://voucherly.it/
- * Version: 1.1.0
+ * Version: 1.1.1
  * Requires Plugins: woocommerce
  * Requires at least: 5.0
  * Tested up to: 6.7.0
