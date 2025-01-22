@@ -524,8 +524,7 @@ class voucherly extends WC_Payment_Gateway
         $customerPaymentMethods = $this->getCustomerPaymentMethods($customerId);
         if (empty($customerPaymentMethods)) {
             parent::payment_fields();
-
-            exit;
+            return;
         }
 
         echo '<div class="wc-saved-payment-methods">';
