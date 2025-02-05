@@ -776,19 +776,19 @@ class voucherly extends WC_Payment_Gateway
         $foodCategoryId = $this->get_option('foodCategory');
 
         foreach (WC()->cart->get_cart() as $key => $item) {
-            $product = wc_get_product($item['product_id']);
-
-            $quantity = $item['quantity'];
-            $lineNetAmount = $item['line_total'];
-            $unitTotal = round(($lineNetAmount + $item['line_tax']) / $quantity, 2);
-            $lineAmount = $unitTotal * $quantity;
+            $product = $item['data'];
 
             $line = new CreatePaymentRequestLine();
-            $line->productName = $product->get_name();
+            $line->productName = $product->get_title();
+            $line->productDescription = WC()->cart->get_item_data( $item, true );
             $line->productImage = wp_get_attachment_image_src(get_post_thumbnail_id($item['product_id']), 'full')[0];
             $line->unitAmount = round($product->get_regular_price() * 100);
-            $line->unitDiscountAmount = $line->unitAmount - ($unitTotal * 100);
-            $line->quantity = $quantity;
+
+            $taxable = $product->is_taxable();
+            $unitDiscountedPrice = $taxable ? $product->get_price_including_tax() : $product->get_price();
+            $unitDiscountedAmount = round($unitDiscountedPrice * 100);
+            $line->unitDiscountAmount = $line->unitAmount - $unitDiscountedAmount;
+            $line->quantity = $item['quantity'];
 
             if (isset($foodCategoryId) && !empty($foodCategoryId)) {
                 $line->isFood = in_array($foodCategoryId, $product->get_category_ids(), true);
@@ -796,7 +796,7 @@ class voucherly extends WC_Payment_Gateway
                 $line->isFood = true;
             }
 
-            $line->taxRate = $this->calculateTaxRate($lineAmount - $lineNetAmount, $lineNetAmount);
+            $line->taxRate = $this->calculateTaxRate($item['line_tax'], $item['line_total']);
 
             $lines[] = $line;
         }
