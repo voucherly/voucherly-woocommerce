@@ -1,4 +1,7 @@
 == Changelog ==
+= 1.1.3 =
+* Cancel order if payment is voided
+
 = 1.1.2 =
 * Fix coupon applied twice to lines
 
