@@ -1,4 +1,7 @@
 == Changelog ==
+= 1.1.2 =
+* Fix coupon applied twice to lines
+
 = 1.1.1 =
 * Fix display issue in WooCommerce (classic) for logged-in customers without saved payment methods
 

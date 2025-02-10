@@ -524,6 +524,7 @@ class voucherly extends WC_Payment_Gateway
         $customerPaymentMethods = $this->getCustomerPaymentMethods($customerId);
         if (empty($customerPaymentMethods)) {
             parent::payment_fields();
+
             return;
         }
 
@@ -780,7 +781,7 @@ class voucherly extends WC_Payment_Gateway
 
             $line = new CreatePaymentRequestLine();
             $line->productName = $product->get_title();
-            $line->productDescription = WC()->cart->get_item_data( $item, true );
+            $line->productDescription = WC()->cart->get_item_data($item, true);
             $line->productImage = wp_get_attachment_image_src(get_post_thumbnail_id($item['product_id']), 'full')[0];
             $line->unitAmount = round($product->get_regular_price() * 100);
 
