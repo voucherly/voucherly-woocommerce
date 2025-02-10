@@ -9,7 +9,7 @@
         }
     ],
     "require": {
-        "voucherly/voucherly-php-sdk": "^1.1"
+        "voucherly/voucherly-php-sdk": "^1.2"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.65"
