@@ -224,12 +224,6 @@ class voucherly extends WC_Payment_Gateway
                 $success = sanitize_text_field(wp_unslash($_GET['success']));
                 $status = sanitize_text_field(wp_unslash($_GET['status']));
 
-                if ('Voided' === $status) {
-                    header('Location: '.wc_get_checkout_url());
-
-                    exit;
-                }
-
                 if (isset($_GET['paymentId'])) {
                     $paymentId = sanitize_text_field(wp_unslash($_GET['paymentId']));
                 } elseif (isset($_GET['payment_Id'])) {
@@ -243,15 +237,24 @@ class voucherly extends WC_Payment_Gateway
                 }
 
                 $payment = Payment::get($paymentId);
-                if (!PaymentHelper::isPaidOrCaptured($payment)) {
-                    // $this->warning[] = $this->l('An error occurred during the operation. Don\'t worry, the payment has already been reversed. If you need any assistance, please contact customer service.');
-                    header('Location: '.wc_get_checkout_url());
+                $order = new WC_Order($payment->metadata->orderId);
+                if (PaymentHelper::isPaidOrCaptured($payment)) {
+                    header('Location: '.$this->get_return_url($order));
 
                     exit;
                 }
 
-                $order = new WC_Order($payment->metadata->orderId);
-                header('Location: '.$this->get_return_url($order));
+                // $this->warning[] = $this->l('An error occurred during the operation. Don\'t worry, the payment has already been reversed. If you need any assistance, please contact customer service.');
+
+                if ($order->has_status(['pending'])) {
+                    if ('Voided' === $status) {
+                        $order->update_status('cancelled', 'Payment cancelled by user');
+                    } else {
+                        $order->update_status('cancelled', 'Payment failed');
+                    }
+                }
+
+                header('Location: '.wc_get_checkout_url());
 
                 break;
 
@@ -433,13 +436,15 @@ class voucherly extends WC_Payment_Gateway
                         if ($order->has_status(wc_get_is_paid_statuses())) {
                             continue;
                         }
-                        if (self::paymentIsPaidOrCaptured($payment)) {
+
+                        if (PaymentHelper::isPaidOrCaptured($payment)) {
                             $order->payment_complete($payment->id);
                             $order->add_order_note('The Voucherly Payment has been finalized by custom cron action');
                             $order->save();
 
                             continue;
                         }
+
                         if ('CANCELED' === $payment->status) {
                             $order->update_status('cancelled');
                             $order->add_order_note('The Voucherly Payment has been cancelled by custom cron action');
