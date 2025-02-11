@@ -15,7 +15,7 @@ require_once __DIR__.'/vendor/autoload.php';
 
 class voucherly extends WC_Payment_Gateway
 {
-    public const TITLE = 'Voucherly (carte di pagamento, buoni pasto e altri metodi)';
+    public const TITLE = 'Carte di debito o credito, buoni pasto e altri metodi — Paga con Voucherly';
     public const DESCRIPTION = 'Verrai reindirizzato al portale di Voucherly dove potrai pagare con i tuoi buoni pasto o con carta di credito.';
     public const SUPPORTS = [
         'products',
@@ -406,7 +406,7 @@ class voucherly extends WC_Payment_Gateway
             $icon_html .= $this->getIconHtml($i->src, $i->alt);
         }
         $icon_html .= '</div>';
-        
+
         // $icon_html .= sprintf( '<a href="%1$s" class="about_voucherly" onclick="javascript:window.open(\'%1$s\',\'Voucherly\',\'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=1060, height=700\'); return false;">' . esc_attr__( 'Che cosa è Voucherly?', 'voucherly' ) . '</a>', "https://voucherly.it" );
 
         return apply_filters('woocommerce_gateway_icon', $icon_html, $this->id);
