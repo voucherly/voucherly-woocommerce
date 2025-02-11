@@ -49,7 +49,7 @@ class voucherly extends WC_Payment_Gateway
         Api::setOsVersionHeader($wp_version);
         Api::setOsFrameworkHeader('WooCommerce '.WC()->version);
         Api::setAppNameHeader('voucherly-woocommerce');
-        Api::setAppVersionHeader(get_plugin_data(__DIR__.'/woocommerce-gateway-voucherly.php')['Version']);
+        Api::setAppVersionHeader($this->getPluginVersion());
         Api::setAppHouseHeader('Voucherly');
         Api::setDeviceTypeHeader('ECOMMERCE-PLUGIN');
 
@@ -381,7 +381,7 @@ class voucherly extends WC_Payment_Gateway
 
     public function payment_scripts()
     {
-        wp_register_style('voucherly_styles', plugins_url('/assets/css/voucherly-styles.css', __FILE__), [], '1.1.0');
+        wp_register_style('voucherly_styles', plugins_url('/assets/css/voucherly-styles.css', __FILE__), [], $this->getPluginVersion());
         wp_enqueue_style('voucherly_styles');
     }
 
@@ -401,11 +401,12 @@ class voucherly extends WC_Payment_Gateway
             return '';
         }
 
-        $icon_html = '';
+        $icon_html = '<div class="voucherly_icons">';
         foreach ($gateways as $i) {
             $icon_html .= $this->getIconHtml($i->src, $i->alt);
         }
-
+        $icon_html .= '</div>';
+        
         // $icon_html .= sprintf( '<a href="%1$s" class="about_voucherly" onclick="javascript:window.open(\'%1$s\',\'Voucherly\',\'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=1060, height=700\'); return false;">' . esc_attr__( 'Che cosa è Voucherly?', 'voucherly' ) . '</a>', "https://voucherly.it" );
 
         return apply_filters('woocommerce_gateway_icon', $icon_html, $this->id);
@@ -684,6 +685,11 @@ class voucherly extends WC_Payment_Gateway
         }
 
         return $tokens;
+    }
+
+    private function getPluginVersion()
+    {
+        return get_plugin_data(__DIR__.'/woocommerce-gateway-voucherly.php')['Version'];
     }
 
     /**

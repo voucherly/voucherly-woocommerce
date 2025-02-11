@@ -1,16 +1,28 @@
 img.voucherly_icon {
-    float: none!important;
+    float: none !important;
     display: inline;
-    vertical-align: middle;
-    max-height: 48px;
-    max-width: 48px;
+    vertical-align: middle;    
+    max-height: 30px !important;
+    max-width: 68px;
     object-fit: contain;
-    margin: 0 .25rem .125rem;
+    margin: 0 !important;
+}
+
+.payment_method_voucherly .voucherly_icons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+}
+
+.voucherly_icons > img.voucherly_icon{
+    background: white !important;
+    padding: 0.25rem !important;
+    border-radius: .25rem !important;
+    border: 1px solid #e9ebec !important;
 }
 
 .wc-saved-payment-methods  img.voucherly_icon{
-    margin-left: 0;
-    margin-bottom: 0;
+    margin: 0;
 }
 
 a.about_voucherly {
