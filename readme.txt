@@ -41,3 +41,4 @@ Monitora i flussi di vendita, genera report e gestisci l'operatività direttamen
 = 1.1.4 =
 * Update voucherly/voucherly-php-sdk to 1.2.0
 * Refactor Voucherly icon's style
+* Cancel order if payment is voided
