@@ -1,4 +1,8 @@
 == Changelog ==
+= 1.1.4 =
+* Update voucherly/voucherly-php-sdk to 1.2.0
+* Refactor Voucherly icon's style
+
 = 1.1.3 =
 * Cancel order if payment is voided
 
