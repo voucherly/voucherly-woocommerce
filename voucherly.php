@@ -46,7 +46,7 @@ class voucherly extends WC_Payment_Gateway
         $this->loadVoucherlyApiKey();
 
         Api::setOsNameHeader('WordPress');
-        Api::setOsVersionHeader($wp_version);
+        Api::setOsVersionHeader(get_bloginfo('version'));
         Api::setOsFrameworkHeader('WooCommerce '.WC()->version);
         Api::setAppNameHeader('voucherly-woocommerce');
         Api::setAppVersionHeader($this->getPluginVersion());
