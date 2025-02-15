@@ -3,7 +3,7 @@ Contributors: voucherly
 Tags: voucherly, buoni pasto, welfare, pagamenti
 Requires at least: 5.0
 Tested up to: 6.7.0
-Stable tag: 1.1.4
+Stable tag: 1.1.5
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -38,7 +38,5 @@ Aumenta le tue vendite attirando nuovi clienti interessati a spendere i propri b
 Monitora i flussi di vendita, genera report e gestisci l'operatività direttamente da un'unica interfaccia.
 
 == Changelog ==
-= 1.1.4 =
-* Update voucherly/voucherly-php-sdk to 1.2.0
-* Refactor Voucherly icon's style
-* Cancel order if payment is voided
+= 1.1.5 =
+* Fix WordPress version passed in Voucherly API

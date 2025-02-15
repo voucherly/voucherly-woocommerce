@@ -1,4 +1,7 @@
 == Changelog ==
+= 1.1.5 =
+* Fix WordPress version passed in Voucherly API
+
 = 1.1.4 =
 * Update voucherly/voucherly-php-sdk to 1.2.0
 * Refactor Voucherly icon's style
