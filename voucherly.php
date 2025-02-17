@@ -403,7 +403,7 @@ class voucherly extends WC_Payment_Gateway
 
         $icon_html = '<div class="voucherly_icons">';
         foreach ($gateways as $i) {
-            $icon_html .= $this->getIconHtml($i->src, $i->alt);
+            $icon_html .= $this->getIconHtml($i->src, $i->name);
         }
         $icon_html .= '</div>';
 
@@ -631,8 +631,9 @@ class voucherly extends WC_Payment_Gateway
         foreach ($paymentGateways as $gateway) {
             if ($gateway->isActive && !$gateway->merchantConfiguration->isFallback) {
                 $formattedGateway['id'] = $gateway->id;
+                $formattedGateway['name'] = $gateway->name;
+                $formattedGateway['type'] = $gateway->type;
                 $formattedGateway['src'] = $gateway->icon ?? $gateway->checkoutImage;
-                $formattedGateway['alt'] = $gateway->name;
 
                 $gateways[] = $formattedGateway;
             }
