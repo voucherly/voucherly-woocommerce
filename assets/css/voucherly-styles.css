@@ -14,14 +14,14 @@ img.voucherly_icon {
     gap: .5rem;
 }
 
-.voucherly_icons > img.voucherly_icon{
+.voucherly_icons > img.voucherly_icon {
     background: white !important;
     padding: 0.25rem !important;
     border-radius: .25rem !important;
     border: 1px solid #e9ebec !important;
 }
 
-.wc-saved-payment-methods  img.voucherly_icon{
+.wc-saved-payment-methods  img.voucherly_icon {
     margin: 0;
 }
 
