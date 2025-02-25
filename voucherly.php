@@ -868,10 +868,10 @@ class voucherly extends WC_Payment_Gateway
         return $discounts;
     }
 
-    private function calculateTaxRate($taxAmount, $netAmount)
+    private function calculateTaxRate(float $taxAmount, float $netAmount)
     {
         // I don't need to test the type. NetAmount is probably 0.0
-        if (0 == $netAmount || 0 == $taxAmount) {
+        if (0.0 === $netAmount || 0.0 === $taxAmount) {
             return 0.0;
         }
 
