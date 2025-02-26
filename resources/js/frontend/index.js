@@ -27,9 +27,11 @@ const Label = ( props ) => {
 	var icons = getBlocksConfiguration().icons ?? [];
 	if (icons.length > 0) {
 
-		return <div style={{display: "flex", flexDirection: "row-reverse"}}>
+		icons = icons.map((icon) => ({ id: icon.id, alt: icon.name, src: icon.src }));
+
+		return <div className="payment_method_voucherly_block">
 			{ labelText }
-			<PaymentMethodIcons icons={ icons } align="left" />
+			<PaymentMethodIcons icons={ icons } align="left" className="voucherly_icons" />
 		</div>;
 	}
 		

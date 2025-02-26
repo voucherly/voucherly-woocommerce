@@ -1,30 +1,31 @@
-img.voucherly_icon {
+.voucherly_icons {
+    margin-top: .5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+}
+
+.voucherly_icons > img, .voucherly_icon {
     float: none !important;
     display: inline;
     vertical-align: middle;    
     max-height: 30px !important;
     max-width: 68px;
     object-fit: contain;
+    border-radius: .25rem !important;
+    border: 1px solid #e9ebec !important;
     margin: 0 !important;
 }
 
-.payment_method_voucherly .voucherly_icons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .5rem;
-}
-
-.voucherly_icons > img.voucherly_icon {
+.voucherly_icons > img {
     background: white !important;
     padding: 0.25rem !important;
-    border-radius: .25rem !important;
-    border: 1px solid #e9ebec !important;
 }
 
-.wc-saved-payment-methods  img.voucherly_icon {
-    margin: 0;
+.payment_method_voucherly .wc-saved-payment-methods img {
+    margin-right: .5rem !important;
 }
 
-a.about_voucherly {
+/* a.about_voucherly {
     font-size: .8em;
 }
