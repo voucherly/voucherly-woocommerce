@@ -880,6 +880,6 @@ class voucherly extends WC_Payment_Gateway
 
     private function getVoucherlyCustomerUserMetaKey(): string
     {
-        return 'yes' === 'voucherly_customer_'.$this->get_option('sandbox') ? 'sand' : 'live';
+        return 'voucherly_customer_'.('yes' === $this->get_option('sandbox') ? 'sand' : 'live');
     }
 }

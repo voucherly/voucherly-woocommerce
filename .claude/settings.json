@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /c/Users/franc/source/repos/Voucherly/plugin/voucherly-woocommerce -name *test* -o -name *spec* -o -name phpunit* -o -name .jest* -o -name jest*)",
+      "Bash(grep -r \"Version\\\\|version\\\\|VERSION\" /c/Users/franc/source/repos/Voucherly/plugin/voucherly-woocommerce/*.php)"
+    ]
+  }
+}
