@@ -1,0 +1,22 @@
+# Files kept out of the WordPress.org SVN release (rsync --exclude-from syntax).
+/.git
+/.github
+/.claude
+/.idea
+/.distignore
+/.gitattributes
+/.gitignore
+/.php-cs-fixer.php
+/.php-cs-fixer.cache
+.DS_Store
+/CLAUDE.md
+/README.md
+/docker-compose.yml
+/node_modules
+/resources
+/scripts
+/package.json
+/package-lock.json
+/composer.lock
+/phpcs.xml
+/webpack.config.js

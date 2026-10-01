@@ -21,8 +21,22 @@ npm run i18n:build     # Build .pot + JSON translation files
 
 # Packaging
 scripts/generate-package-zip.bat   # Create distributable ZIP
-scripts/svn.sh                     # Deploy to WordPress plugin SVN
+
+# Local test environment (Docker: WordPress + WooCommerce + Plugin Check, plugin mounted live)
+npm run env:start        # http://localhost:8888, admin / password
+npm run env:tunnel       # Public HTTPS URL (Voucherly rejects non-HTTPS callback URLs); prints URL and a new admin password
+npm run env:tunnel-stop
+npm run env:debug-log
+npm run plugin-check     # Same check WordPress.org runs on updates
+npm run wp -- <command>  # Any WP-CLI command
+npm run env:destroy      # Delete containers and data
 ```
+
+## Release
+
+`.github/workflows/deploy.yml` publishes to the WordPress.org SVN repository (slug `voucherly`) with `10up/action-wordpress-plugin-deploy`: pushing a tag `x.y.z` (or `vx.y.z`) syncs `trunk` and creates `tags/x.y.z` in one commit. Files listed in `.distignore` are not published. Running the workflow manually defaults to a dry run. The job fails if the tag, the plugin header version, the readme `Stable tag` and `package.json` disagree. It needs the `SVN_USERNAME` and `SVN_PASSWORD` secrets (the SVN password from the WordPress.org profile, not the account password). Banners and icons live only in the SVN `assets/` folder.
+
+`readme.txt` must be written in English; Italian texts come from translate.wordpress.org.
 
 ## Architecture
 

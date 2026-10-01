@@ -4,3 +4,16 @@
 \resources\
 \.git\
 \.idea\
+\.claude\
+CLAUDE.md
+docker-compose.yml
+.gitattributes
+.php-cs-fixer
+\.github\
+.distignore
+README.md
+package.json
+package-lock.json
+composer.lock
+phpcs.xml
+webpack.config.js

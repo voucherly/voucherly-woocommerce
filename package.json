@@ -3,7 +3,7 @@
 	"author": "voucherly",
 	"title": "Voucherly",
 	"version": "1.2.0",
-    "license": "GNU GPLv3",
+	"license": "GNU GPLv3",
 	"keywords": [],
 	"engines": {
 		"node": ">=6.9.4",
@@ -22,6 +22,14 @@
 		"i18n:pot": "wp i18n make-pot . languages/voucherly.pot --slug=voucherly --exclude=\"node_modules/,tmp-svn/,tmp-plugin/,languages/,assets/\"",
 		"i18n:json": "wp i18n make-json languages --no-purge",
 		"packages-update": "wp-scripts packages-update",
-		"check-engines": "wp-scripts check-engines"
+		"check-engines": "wp-scripts check-engines",
+		"env:start": "docker compose up -d && docker compose run --rm cli bash wp-content/plugins/voucherly/scripts/wp-setup.sh",
+		"env:stop": "docker compose stop",
+		"env:destroy": "docker compose --profile tunnel --profile cli down -v",
+		"env:tunnel": "docker compose --profile tunnel up -d tunnel && docker compose run --rm cli bash wp-content/plugins/voucherly/scripts/wp-tunnel.sh",
+		"env:tunnel-stop": "docker compose --profile tunnel stop tunnel",
+		"env:debug-log": "docker compose exec wordpress tail -n 100 wp-content/debug.log",
+		"wp": "docker compose run --rm cli wp",
+		"plugin-check": "docker compose run --rm cli wp plugin check voucherly --mode=update --exclude-directories=resources,scripts,.claude,.github --ignore-codes=github_directory --exclude-files=CLAUDE.md,docker-compose.yml,.gitattributes,.gitignore,.DS_Store,.php-cs-fixer.php,.php-cs-fixer.cache,.distignore"
 	}
 }
