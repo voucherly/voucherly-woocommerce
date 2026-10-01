@@ -94,5 +94,7 @@ Changelog is manually maintained in `changelog.txt` and `readme.txt`.
 ## Code Standards
 
 - PHP: PSR2-based rules via PHP-CS-Fixer (`.php-cs-fixer.php`) and WooCommerce-Core PHPCS rules (`phpcs.xml`)
+- PHP-CS-Fixer is pinned to 3.68: later releases add `declare(strict_types=1)` and return types through the risky rule sets, which would change how WordPress calls the plugin. `composer.lock` is not versioned, so the pin lives in `composer.json`.
+- PHP files are checked out with LF (`.gitattributes`), so PHP-CS-Fixer gives the same result on Windows as in CI.
 - No automated test suite is configured
 - Text domain for i18n: `voucherly`
