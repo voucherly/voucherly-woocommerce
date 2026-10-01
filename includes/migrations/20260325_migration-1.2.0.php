@@ -7,6 +7,8 @@
  */
 defined('ABSPATH') || exit;
 
+// phpcs:disable WordPress.DB.DirectDatabaseQuery -- One-off rename of meta keys, no API covers a bulk meta_key update.
+
 function voucherly_migrate_1_2_0_up()
 {
     global $wpdb;

@@ -1,13 +1,16 @@
 <?php
 
-use VoucherlyApi\Api;
-use VoucherlyApi\Customer\Customer;
-use VoucherlyApi\Payment\CreatePaymentRequest;
-use VoucherlyApi\Payment\CreatePaymentRequestDiscount;
-use VoucherlyApi\Payment\CreatePaymentRequestLine;
-use VoucherlyApi\Payment\Payment;
-use VoucherlyApi\PaymentGateway\PaymentGateway;
-use VoucherlyApi\PaymentHelper;
+use VoucherlyApi\Enum\LineType;
+use VoucherlyApi\Enum\PaymentMode;
+use VoucherlyApi\Enum\PaymentStatus;
+use VoucherlyApi\Exception\ApiException;
+use VoucherlyApi\Model\Payment;
+use VoucherlyApi\Model\PaymentDiscount;
+use VoucherlyApi\Request\CreatePaymentRequest;
+use VoucherlyApi\Request\ListCustomerPaymentMethodParams;
+use VoucherlyApi\Request\PaymentLineRequest;
+use VoucherlyApi\Request\PaymentLineRequestProduct;
+use VoucherlyApi\VoucherlyClient;
 
 defined('ABSPATH') || exit;
 
@@ -22,6 +25,8 @@ class voucherly extends WC_Payment_Gateway
         'refunds',
         // 'tokenization' // La tokenizzazione comporta la gestione dei metodi di pagamento a db. https://developer.woocommerce.com/docs/woocommerce-payment-token-api/
     ];
+
+    private ?VoucherlyClient $voucherlyClient = null;
 
     public function __construct()
     {
@@ -42,16 +47,6 @@ class voucherly extends WC_Payment_Gateway
 
         add_action('woocommerce_update_options_payment_gateways_'.$this->id, [$this, 'process_admin_options']);
         add_action('woocommerce_api_wc_gateway_'.$this->id, [$this, 'gateway_api']);
-
-        $this->loadVoucherlyApiKey();
-
-        Api::setOsNameHeader('WordPress');
-        Api::setOsVersionHeader(get_bloginfo('version'));
-        Api::setOsFrameworkHeader('WooCommerce '.WC()->version);
-        Api::setAppNameHeader('voucherly-woocommerce');
-        Api::setAppVersionHeader($this->getPluginVersion());
-        Api::setAppHouseHeader('Voucherly');
-        Api::setDeviceTypeHeader('ECOMMERCE-PLUGIN');
 
         add_action('woocommerce_available_payment_gateways', [$this, 'check_gateway'], 15);
 
@@ -165,7 +160,14 @@ class voucherly extends WC_Payment_Gateway
 
         $request = $this->getPaymentRequest($order);
 
-        $payment = Payment::create($request);
+        try {
+            $payment = $this->getVoucherlyClient()->payments->create($request);
+        } catch (Exception $e) {
+            $this->logError('Order id - '.$order->get_id().' - Could not create the payment: '.$e->getMessage());
+
+            // WooCommerce shows the message of the exception to the customer.
+            throw $e;
+        }
 
         try {
             $order->set_transaction_id($payment->id);
@@ -199,11 +201,17 @@ class voucherly extends WC_Payment_Gateway
         }
 
         try {
-            $response = Payment::refund($order->get_transaction_id());
+            $response = $this->getVoucherlyClient()->payments->refund($order->get_transaction_id());
 
-            return isset($response->status) && ('Refunded' === $response->status || 'Cancelled' === $response->status);
+            return in_array($response->status, [PaymentStatus::REFUNDED, PaymentStatus::CANCELLED], true);
         } catch (Exception $e) {
-            error_log('Voucherly Refund Error: '.$e->getMessage());
+            if (function_exists('wc_get_logger')) {
+                $logger = wc_get_logger();
+                $logger->error(
+                    'Order id - '.$order->get_id().' - Refund failed: '.$e->getMessage(),
+                    ['source' => 'voucherly']
+                );
+            }
         }
 
         return false;
@@ -211,11 +219,12 @@ class voucherly extends WC_Payment_Gateway
 
     public function gateway_api()
     {
+        // phpcs:disable WordPress.Security.NonceVerification.Recommended -- Voucherly calls this endpoint from its hosted checkout and servers, so no WordPress nonce can exist; every payment is verified through the Voucherly API instead.
         if (!isset($_GET['action'])) {
             exit;
         }
 
-        switch ($_GET['action']) {
+        switch (sanitize_key(wp_unslash($_GET['action']))) {
             case 'redirect':
                 if (!isset($_GET['success']) || !isset($_GET['status'])) {
                     header('Location: '.wc_get_checkout_url());
@@ -238,9 +247,24 @@ class voucherly extends WC_Payment_Gateway
                     exit;
                 }
 
-                $payment = Payment::get($paymentId);
-                $order = new WC_Order($payment->metadata->orderId);
-                if (PaymentHelper::isPaidOrCaptured($payment)) {
+                try {
+                    $payment = $this->getVoucherlyClient()->payments->retrieve($paymentId);
+                } catch (Exception $e) {
+                    $this->logError('Payment '.$paymentId.' - Could not verify the payment on return from the checkout: '.$e->getMessage());
+
+                    // The order is left as it is: the callback or the finalize cron settles it once Voucherly answers again.
+                    header('Location: '.('OK' === $success ? $this->get_return_url('') : wc_get_checkout_url()));
+
+                    exit;
+                }
+
+                // A card saved during this payment must show up at the next checkout.
+                if (!empty($payment->customerId)) {
+                    delete_transient($this->getCustomerPaymentMethodsCacheKey($payment->customerId));
+                }
+
+                $order = new WC_Order($payment->metadata['orderId']);
+                if (self::isPaidOrConfirmed($payment)) {
                     header('Location: '.$this->get_return_url($order));
 
                     exit;
@@ -268,8 +292,25 @@ class voucherly extends WC_Payment_Gateway
                 }
 
                 $paymentId = $params['id'];
-                $payment = Payment::get($paymentId);
-                if (!PaymentHelper::isPaidOrCaptured($payment)) {
+
+                try {
+                    $payment = $this->getVoucherlyClient()->payments->retrieve($paymentId);
+                } catch (Exception $e) {
+                    $this->logError('Payment '.$paymentId.' - Callback could not retrieve the payment: '.$e->getMessage());
+                    header('Content-Type: application/json');
+
+                    // ok:false makes Voucherly send the callback again.
+                    exit(
+                        wp_json_encode(
+                            [
+                                'ok' => false,
+                                'error' => 'Could not retrieve the payment from Voucherly',
+                            ]
+                        )
+                    );
+                }
+
+                if (!self::isPaidOrConfirmed($payment)) {
                     header('Content-Type: application/json');
 
                     exit(
@@ -282,7 +323,7 @@ class voucherly extends WC_Payment_Gateway
                     );
                 }
 
-                if ('Payment' !== $payment->mode) {
+                if (PaymentMode::PAYMENT !== $payment->mode) {
                     header('Content-Type: application/json');
 
                     exit(
@@ -294,53 +335,67 @@ class voucherly extends WC_Payment_Gateway
                     );
                 }
 
-                $orderId = $payment->metadata->orderId;
-                $order = new WC_Order($orderId);
+                $orderId = $payment->metadata['orderId'];
 
-                if ($order->has_status(wc_get_is_paid_statuses())) {
-                    header('Content-Type: application/json');
-                    if ($order->get_transaction_id() === $paymentId) {
-                        exit(
-                            wp_json_encode(
-                                [
-                                    'ok' => true,
-                                    'orderId' => $orderId,
-                                ]
-                            )
-                        );
-                    }
+                header('Content-Type: application/json');
 
+                // Voucherly retries the callback when the response is not the expected one, so the same payment can arrive more than once, even concurrently.
+                if (!$this->lockOrder($orderId)) {
                     exit(
                         wp_json_encode(
                             [
                                 'ok' => false,
-                                'stop' => true,
-                                'error' => 'WooCommerce order already paid with different payment method',
+                                'error' => 'WooCommerce order is being processed by another request',
                             ]
                         )
                     );
                 }
 
-                $order->payment_complete($paymentId);
+                $order = new WC_Order($orderId);
 
-                exit(
-                    wp_json_encode(
-                        [
-                            'ok' => true,
-                            'orderId' => $orderId,
-                        ]
-                    )
-                );
+                if (!$order->has_status(wc_get_is_paid_statuses())) {
+                    $order->payment_complete($paymentId);
+                    $response = [
+                        'ok' => true,
+                        'orderId' => $orderId,
+                    ];
+                } elseif ($order->get_transaction_id() === $paymentId) {
+                    $response = [
+                        'ok' => true,
+                        'orderId' => $orderId,
+                    ];
+                } else {
+                    $response = [
+                        'ok' => false,
+                        'stop' => true,
+                        'error' => 'WooCommerce order already paid with different payment method',
+                    ];
+                }
+
+                $this->unlockOrder($orderId);
+
+                exit(wp_json_encode($response));
         }
+        // phpcs:enable
     }
 
     public function admin_options()
     {
-        $ok = Api::testAuthentication();
+        try {
+            $ok = $this->isApiKeyValid($this->getApiKey());
+        } catch (Exception $e) {
+            $this->logError('Could not verify the API key: '.$e->getMessage());
+            echo '<div class="notice-error notice">';
+            echo '<p>'.esc_html($this->getUnreachableMessage($e)).'</p>';
+            echo '</div>';
+
+            return parent::admin_options();
+        }
+
         if (!$ok) {
             echo '<div class="notice-error notice">';
             // translators: %s is replaced with Voucherly Dashboard link
-            echo '<p>'.esc_html(sprintf(__('Voucherly is not correctly configured, get an API key in developer section on <a href="%s" target="_blank">Voucherly Dashboard</a>.', 'voucherly'), 'https://dashboard.voucherly.com')).'</p>';
+            echo '<p>'.wp_kses(sprintf(__('Voucherly is not correctly configured, get an API key in developer section on <a href="%s" target="_blank">Voucherly Dashboard</a>.', 'voucherly'), 'https://dashboard.voucherly.it'), ['a' => ['href' => [], 'target' => []]]).'</p>';
             echo '</div>';
         }
 
@@ -349,25 +404,38 @@ class voucherly extends WC_Payment_Gateway
 
     public function process_admin_options()
     {
-        $liveOk = $this->processApiKey('live');
-        if (!$liveOk) {
-            echoInvalidApiKey('API key live');
+        try {
+            $liveOk = $this->processApiKey('live');
+            if (!$liveOk) {
+                $this->addInvalidApiKeyError('API key live');
 
-            return false;
-        }
+                return false;
+            }
 
-        $sandOk = $this->processApiKey('sand');
-        if (!$sandOk) {
-            echoInvalidApiKey('API key sandox');
+            $sandOk = $this->processApiKey('sand');
+            if (!$sandOk) {
+                $this->addInvalidApiKeyError('API key sandbox');
+
+                return false;
+            }
+        } catch (Exception $e) {
+            $this->logError('Could not verify the API key: '.$e->getMessage());
+            WC_Admin_Settings::add_error($this->getUnreachableMessage($e));
 
             return false;
         }
 
         parent::process_admin_options();
 
-        $this->loadVoucherlyApiKey();
+        // The saved settings can switch between the sandbox and the live key.
+        $this->voucherlyClient = null;
 
-        $this->getAndUpdatePaymentGateways();
+        try {
+            $this->getAndUpdatePaymentGateways();
+        } catch (Exception $e) {
+            $this->logError('Could not update the payment gateways: '.$e->getMessage());
+            WC_Admin_Settings::add_error($this->getUnreachableMessage($e));
+        }
     }
 
     public function is_available()
@@ -396,8 +464,8 @@ class voucherly extends WC_Payment_Gateway
      */
     public function get_icon()
     {
-        $gateways = json_decode($this->get_option('gateways'));
-        if (!isset($gateways)) {
+        $gateways = self::getCheckoutGateways($this->get_option('gateways'));
+        if (empty($gateways)) {
             return '';
         }
 
@@ -409,7 +477,21 @@ class voucherly extends WC_Payment_Gateway
 
         // $icon_html .= sprintf( '<a href="%1$s" class="about_voucherly" onclick="javascript:window.open(\'%1$s\',\'Voucherly\',\'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=1060, height=700\'); return false;">' . esc_attr__( 'Che cosa è Voucherly?', 'voucherly' ) . '</a>', "https://voucherly.it" );
 
+        // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WooCommerce core filter.
         return apply_filters('woocommerce_gateway_icon', $icon_html, $this->id);
+    }
+
+    public static function getCheckoutGateways(?string $gatewaysJson): array
+    {
+        $gateways = json_decode($gatewaysJson ?? '');
+        if (!is_array($gateways)) {
+            return [];
+        }
+
+        // Manual payments and merchant-defined methods exist on Voucherly but must not be advertised at checkout.
+        return array_values(array_filter($gateways, static function ($gateway) {
+            return !in_array($gateway->type ?? '', ['Hidden', 'Custom'], true);
+        }));
     }
 
     // START finalize_orders
@@ -435,12 +517,12 @@ class voucherly extends WC_Payment_Gateway
                             continue;
                         }
 
-                        $payment = Payment::get($transactionId);
+                        $payment = $this->getVoucherlyClient()->payments->retrieve($transactionId);
                         if ($order->has_status(wc_get_is_paid_statuses())) {
                             continue;
                         }
 
-                        if (PaymentHelper::isPaidOrCaptured($payment)) {
+                        if (self::isPaidOrConfirmed($payment)) {
                             $order->payment_complete($payment->id);
                             $order->add_order_note('The Voucherly Payment has been finalized by custom cron action');
                             $order->save();
@@ -448,7 +530,8 @@ class voucherly extends WC_Payment_Gateway
                             continue;
                         }
 
-                        if ('CANCELED' === $payment->status) {
+                        // None of these statuses can turn into a paid one.
+                        if (in_array($payment->status, [PaymentStatus::CANCELLED, PaymentStatus::VOIDED, PaymentStatus::EXPIRED], true)) {
                             $order->update_status('cancelled');
                             $order->add_order_note('The Voucherly Payment has been cancelled by custom cron action');
                             $order->save();
@@ -544,7 +627,7 @@ class voucherly extends WC_Payment_Gateway
 
             $card = $customerPaymentMethod->creditCard;
 
-            if ($card->expirationMonth < date('m') && $card->expirationYear <= date('Y')) {
+            if ((int) $card->expirationYear * 100 + (int) $card->expirationMonth < (int) gmdate('Ym')) {
                 continue;
             }
 
@@ -557,7 +640,7 @@ class voucherly extends WC_Payment_Gateway
             echo '<input type="radio" id="wc-'.esc_attr($this->id).'-token-'.esc_attr($customerPaymentMethod->id).'" ';
             echo 'name="wc-'.esc_attr($this->id).'-payment-token" value="'.esc_attr($customerPaymentMethod->id).'" />';
             echo '<label for="wc-'.esc_attr($this->id).'-token-'.esc_attr($customerPaymentMethod->id).'">';
-            echo $this->getIconHtml(plugins_url($brandImagePath, __FILE__), $card->brand);
+            echo wp_kses_post($this->getIconHtml(plugins_url($brandImagePath, __FILE__), $card->brand));
             // echo esc_html(ucfirst($card->brand)). ' ' . esc_html($card->pan);
             echo esc_html($card->pan);
             echo '</label>';
@@ -578,13 +661,53 @@ class voucherly extends WC_Payment_Gateway
         return '<img src="'.esc_attr($src).'" alt="'.esc_attr($alt).'" class="voucherly_icon" />';
     }
 
-    private function loadVoucherlyApiKey()
+    private function getApiKey(): string
     {
-        if ('yes' === $this->get_option('sandbox')) {
-            Api::setApiKey($this->get_option('apiKey_sand'));
-        } else {
-            Api::setApiKey($this->get_option('apiKey_live'));
+        return (string) $this->get_option('yes' === $this->get_option('sandbox') ? 'apiKey_sand' : 'apiKey_live');
+    }
+
+    private function getVoucherlyClient(): VoucherlyClient
+    {
+        if (null === $this->voucherlyClient) {
+            $this->voucherlyClient = $this->createVoucherlyClient($this->getApiKey());
         }
+
+        return $this->voucherlyClient;
+    }
+
+    private function createVoucherlyClient(string $apiKey): VoucherlyClient
+    {
+        return new VoucherlyClient([
+            'apiKey' => $apiKey,
+            'os' => 'WordPress',
+            'osVersion' => get_bloginfo('version'),
+            'osFramework' => 'WooCommerce '.WC()->version,
+            'app' => 'voucherly-woocommerce',
+            'appVersion' => $this->getPluginVersion(),
+            'appHouse' => 'Voucherly',
+            'deviceType' => 'ECOMMERCE-PLUGIN',
+        ]);
+    }
+
+    private function isApiKeyValid(string $apiKey): bool
+    {
+        // VoucherlyClient rejects an empty key, which the API would refuse with 401 anyway.
+        if ('' === $apiKey) {
+            return false;
+        }
+
+        try {
+            $this->createVoucherlyClient($apiKey)->paymentGateways->list();
+        } catch (ApiException $e) {
+            return 401 !== $e->getStatusCode();
+        }
+
+        return true;
+    }
+
+    private static function isPaidOrConfirmed(Payment $payment): bool
+    {
+        return in_array($payment->status, [PaymentStatus::PAID, PaymentStatus::CONFIRMED], true);
     }
 
     private function processApiKey($environment): bool
@@ -595,7 +718,7 @@ class voucherly extends WC_Payment_Gateway
         $newApiKey = $this->get_post_data()['woocommerce_voucherly_'.$optionKey];
 
         if (!empty($newApiKey)) {
-            $ok = Api::testAuthentication($newApiKey);
+            $ok = $this->isApiKeyValid($newApiKey);
             if (!$ok) {
                 return false;
             }
@@ -608,12 +731,24 @@ class voucherly extends WC_Payment_Gateway
         return true;
     }
 
-    private function echoInvalidApiKey($name)
+    private function getUnreachableMessage(Exception $e): string
     {
-        echo '<div class="notice-error notice">';
+        // translators: %s is replaced with the error returned by the Voucherly API or by the connection
+        return sprintf(__('Voucherly could not be reached: %s', 'voucherly'), $e->getMessage());
+    }
+
+    private function logError(string $message)
+    {
+        if (function_exists('wc_get_logger')) {
+            wc_get_logger()->error($message, ['source' => 'voucherly']);
+        }
+    }
+
+    private function addInvalidApiKeyError($name)
+    {
+        // Settings are saved before the admin page starts its output, so the error goes through WooCommerce instead of being echoed.
         // translators: %s is replaced with form label (API key)
-        echo '<p>'.esc_html(sprintf(__('The "%s" is invalid', 'voucherly'), $name)).'</p>';
-        echo '</div>';
+        WC_Admin_Settings::add_error(sprintf(__('The "%s" is invalid', 'voucherly'), $name));
     }
 
     private function getAndUpdatePaymentGateways()
@@ -624,8 +759,7 @@ class voucherly extends WC_Payment_Gateway
 
     private function getPaymentGateways()
     {
-        $paymentGatewaysResponse = PaymentGateway::list();
-        $paymentGateways = $paymentGatewaysResponse->items;
+        $paymentGateways = $this->getVoucherlyClient()->paymentGateways->list()->items ?? [];
         $gateways = [];
 
         foreach ($paymentGateways as $gateway) {
@@ -649,10 +783,19 @@ class voucherly extends WC_Payment_Gateway
             return [];
         }
 
-        $key = 'voucherly_payment_methods:'.$voucherlyCustomerId;
+        $key = $this->getCustomerPaymentMethodsCacheKey($voucherlyCustomerId);
         $customerPaymentMethods = get_transient($key);
         if (false === $customerPaymentMethods) {
-            $customerPaymentMethods = Customer::paymentMethods($voucherlyCustomerId)->items;
+            try {
+                $params = new ListCustomerPaymentMethodParams();
+                $params->length = 100;
+                $customerPaymentMethods = $this->getVoucherlyClient()->paymentMethods->list($voucherlyCustomerId, $params)->items;
+            } catch (Exception $e) {
+                // The customer can still pay with a new method, so a failed lookup must not break the checkout; it is not cached, so the next page load tries again.
+                $this->logError('Could not load the payment methods of customer '.$voucherlyCustomerId.': '.$e->getMessage());
+
+                return [];
+            }
             set_transient($key, $customerPaymentMethods, 60);
         }
 
@@ -690,7 +833,7 @@ class voucherly extends WC_Payment_Gateway
 
     private function getPluginVersion()
     {
-        return get_plugin_data(__DIR__.'/woocommerce-gateway-voucherly.php')['Version'];
+        return get_plugin_data(__DIR__.'/woocommerce-gateway-voucherly.php', false, false)['Version'];
     }
 
     /**
@@ -727,13 +870,16 @@ class voucherly extends WC_Payment_Gateway
     private function getPaymentRequest(WC_Order $order)
     {
         $request = new CreatePaymentRequest();
+        $request->mode = PaymentMode::PAYMENT;
 
         $customerId = get_current_user_id();
         $voucherlyCustomerId = get_user_meta($customerId, $this->getVoucherlyCustomerUserMetaKey(), true);
         if (isset($voucherlyCustomerId) && !empty($voucherlyCustomerId)) {
             $paymentTokenKey = 'wc-'.$this->id.'-payment-token';
+            // phpcs:disable WordPress.Security.NonceVerification.Missing -- WooCommerce verifies the checkout nonce before calling process_payment().
             if (isset($_POST[$paymentTokenKey]) && 'new' !== $_POST[$paymentTokenKey]) {
-                $paymentToken = sanitize_text_field($_POST[$paymentTokenKey]);
+                $paymentToken = sanitize_text_field(wp_unslash($_POST[$paymentTokenKey]));
+                // phpcs:enable
                 if (is_numeric($paymentToken)) {
                     $customerPaymentMethods = $this->getCustomerPaymentMethods($customerId);
                     if (count($customerPaymentMethods) > $paymentToken) {
@@ -793,25 +939,32 @@ class voucherly extends WC_Payment_Gateway
         foreach (WC()->cart->get_cart() as $key => $item) {
             $product = $item['data'];
 
-            $line = new CreatePaymentRequestLine();
-            $line->productName = $product->get_title();
-            $line->productDescription = WC()->cart->get_item_data($item, true);
-            $line->productImage = wp_get_attachment_image_src(get_post_thumbnail_id($item['product_id']), 'full')[0];
+            $lineProduct = new PaymentLineRequestProduct();
+            $lineProduct->externalId = (string) $product->get_id();
+            $lineProduct->name = $product->get_title();
+            $lineProduct->variant = wc_get_formatted_cart_item_data($item, true);
+            $lineProduct->image = (string) wp_get_attachment_image_url(get_post_thumbnail_id($item['product_id']), 'full');
+
+            $line = new PaymentLineRequest();
             $line->unitAmount = round($product->get_regular_price() * 100);
 
             $taxable = $product->is_taxable();
-            $unitDiscountedPrice = $taxable ? $product->get_price_including_tax() : $product->get_price();
+            $unitDiscountedPrice = $taxable ? wc_get_price_including_tax($product) : $product->get_price();
             $unitDiscountedAmount = round($unitDiscountedPrice * 100);
             $line->unitDiscountAmount = $line->unitAmount - $unitDiscountedAmount;
             $line->quantity = $item['quantity'];
 
             if (isset($foodCategoryId) && !empty($foodCategoryId)) {
-                $line->isFood = in_array($foodCategoryId, $product->get_category_ids(), true);
+                // The option is a string and the term ids are integers; a variation has no categories of its own, so they are read from the parent product.
+                $isFood = in_array((int) $foodCategoryId, wc_get_product_term_ids($item['product_id'], 'product_cat'), true);
             } else {
-                $line->isFood = true;
+                $isFood = true;
             }
+            $lineProduct->lineType = $isFood ? LineType::FOOD : LineType::NON_FOOD;
 
-            $line->taxRate = $this->calculateTaxRate($item['line_tax'], $item['line_total']);
+            $lineProduct->taxRate = $this->calculateTaxRate($item['line_tax'], $item['line_total']);
+
+            $line->product = $lineProduct;
 
             $lines[] = $line;
         }
@@ -833,12 +986,16 @@ class voucherly extends WC_Payment_Gateway
                 $shippingTaxAmount = $shipping_method->get_shipping_tax();
                 $shippingNetAmount = $shipping_method->get_cost();
 
-                $shipping = new CreatePaymentRequestLine();
-                $shipping->productName = $shipping_method->get_label();
+                $shippingProduct = new PaymentLineRequestProduct();
+                $shippingProduct->externalId = 'shipping_'.$shipping_method->get_id();
+                $shippingProduct->name = $shipping_method->get_label();
+                $shippingProduct->lineType = 'yes' === $this->get_option('shippingAsFood') ? LineType::FOOD : LineType::SHIPPING;
+                $shippingProduct->taxRate = $this->calculateTaxRate($shippingTaxAmount, $shippingNetAmount);
+
+                $shipping = new PaymentLineRequest();
                 $shipping->unitAmount = round(($shippingTaxAmount + $shippingNetAmount) * 100);
                 $shipping->quantity = 1;
-                $shipping->isFood = 'yes' === $this->get_option('shippingAsFood');
-                $shipping->taxRate = $this->calculateTaxRate($shippingTaxAmount, $shippingNetAmount);
+                $shipping->product = $shippingProduct;
 
                 $lines[] = $shipping;
             }
@@ -857,7 +1014,7 @@ class voucherly extends WC_Payment_Gateway
             $coupon = new WC_Coupon($coupon_code);
             $discountAmount = WC()->cart->get_coupon_discount_amount($coupon_code, false);
 
-            $discount = new CreatePaymentRequestDiscount();
+            $discount = new PaymentDiscount();
             $discount->discountName = $coupon->get_code();
             $discount->discountDescription = $coupon->get_description();
             $discount->amount = round($discountAmount * 100);
@@ -881,5 +1038,37 @@ class voucherly extends WC_Payment_Gateway
     private function getVoucherlyCustomerUserMetaKey(): string
     {
         return 'voucherly_customer_'.('yes' === $this->get_option('sandbox') ? 'sand' : 'live');
+    }
+
+    private function getCustomerPaymentMethodsCacheKey(string $voucherlyCustomerId): string
+    {
+        return 'voucherly_payment_methods:'.$voucherlyCustomerId;
+    }
+
+    private function lockOrder($orderId): bool
+    {
+        global $wpdb;
+
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        $acquired = $wpdb->get_var($wpdb->prepare('SELECT GET_LOCK(%s, %d)', $this->getOrderLockName($orderId), 10));
+
+        // Only a timeout means another request holds the lock; databases without GET_LOCK keep the previous unlocked behaviour instead of rejecting every callback.
+        return '0' !== $acquired;
+    }
+
+    private function unlockOrder($orderId)
+    {
+        global $wpdb;
+
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        $wpdb->query($wpdb->prepare('SELECT RELEASE_LOCK(%s)', $this->getOrderLockName($orderId)));
+    }
+
+    private function getOrderLockName($orderId): string
+    {
+        global $wpdb;
+
+        // MySQL named locks are shared by every database on the server and limited to 64 characters.
+        return 'voucherly_order_'.md5(DB_NAME.$wpdb->prefix.$orderId);
     }
 }

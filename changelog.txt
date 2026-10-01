@@ -1,4 +1,20 @@
 == Changelog ==
+= 1.3.0 =
+* Requires WordPress 6.5 or later and PHP 7.4 or later, tested up to WordPress 7.1
+* Update voucherly/voucherly-php-sdk to 2.0.0
+* Fix "Category for food products", which sent every product as non-food
+* Fix cancellation of pending orders whose Voucherly payment was cancelled, voided or expired
+* Fix fatal error at checkout when a product has no featured image
+* Fix fatal error when saving an invalid API key
+* Show an error instead of a fatal error when Voucherly cannot be reached from the settings page
+* Make the payment callback idempotent when Voucherly delivers the same payment more than once
+* Show a card saved during a payment at the next checkout without waiting for the cache to expire
+* Hide expired saved cards
+* Hide manual and custom payment methods from the checkout icons
+* Fix "translation loading triggered too early" notice
+* Fix the Voucherly Dashboard link in the configuration notice
+* Plugin Check fixes
+
 = 1.2.0 =
 * Fix usermeta keys (with migration)
 

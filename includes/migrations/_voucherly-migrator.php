@@ -90,6 +90,6 @@ class Voucherly_Migrator
      */
     private static function getCurrentVersion()
     {
-        return get_plugin_data(dirname(__DIR__, 2).'/woocommerce-gateway-voucherly.php')['Version'];
+        return get_plugin_data(dirname(__DIR__, 2).'/woocommerce-gateway-voucherly.php', false, false)['Version'];
     }
 }

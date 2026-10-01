@@ -1,0 +1,117 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*.*.*']
+  # A manual run goes through the deployment without committing to SVN, unless dry-run is turned off.
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: "Prepare trunk and tag without committing to SVN"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  version:
+    name: Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Tag, plugin header, readme, package.json and changelogs agree
+        id: version
+        run: |
+          plugin=$(sed -nE 's/^\s*\*\s*Version:\s*([^[:space:]]+).*/\1/p' woocommerce-gateway-voucherly.php | head -1)
+          stable=$(sed -nE 's/^Stable tag:\s*([^[:space:]]+).*/\1/p' readme.txt)
+          package=$(node -p "require('./package.json').version")
+          if [ "$plugin" != "$stable" ] || [ "$plugin" != "$package" ]; then
+            echo "::error::The plugin header $plugin, the readme Stable tag $stable and package.json $package disagree."
+            exit 1
+          fi
+          if [ "$GITHUB_REF_TYPE" = "tag" ] && [ "${GITHUB_REF_NAME#v}" != "$plugin" ]; then
+            echo "::error::The tag $GITHUB_REF_NAME does not match the plugin version $plugin."
+            exit 1
+          fi
+          for file in changelog.txt readme.txt; do
+            if ! tr -d '\r' < "$file" | grep -qxF "= $plugin ="; then
+              echo "::error::$file has no changelog section for $plugin."
+              exit 1
+            fi
+          done
+          echo "version=$plugin" >> "$GITHUB_OUTPUT"
+
+  test:
+    needs: version
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    name: WordPress.org
+    needs: [version, test]
+    runs-on: ubuntu-latest
+    environment: wordpress.org
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          tools: composer
+
+      - name: Install production PHP dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction --no-progress
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      - name: Build blocks checkout script
+        run: |
+          npm install --no-audit --no-fund
+          npm run build
+
+      - name: Deploy to WordPress.org SVN
+        id: deploy
+        uses: 10up/action-wordpress-plugin-deploy@2.3.0
+        with:
+          generate-zip: true
+          dry-run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry-run }}
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          # The GitHub repository is voucherly-woocommerce, the WordPress.org slug is voucherly.
+          SLUG: voucherly
+          VERSION: ${{ needs.version.outputs.version }}
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: voucherly-${{ needs.version.outputs.version }}
+          path: ${{ steps.deploy.outputs.zip-path }}
+
+  # Created after the deployment, so that a release on GitHub always means a version on WordPress.org.
+  release:
+    name: GitHub release
+    needs: [version, publish]
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: voucherly-${{ needs.version.outputs.version }}
+          path: dist
+
+      - name: Notes from changelog.txt
+        run: tr -d '\r' < changelog.txt | awk -v v="= ${{ needs.version.outputs.version }} =" '$0 == v { on = 1; next } /^= / { on = 0 } on' > notes.md
+
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/*.zip --title "$GITHUB_REF_NAME" --notes-file notes.md --verify-tag
