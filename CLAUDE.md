@@ -80,9 +80,10 @@ The `gateways` option stores plain JSON built by the plugin, not SDK objects. `p
 
 ## Version Management
 
-Version must be updated in two places:
+Version must be updated in three places:
 1. `woocommerce-gateway-voucherly.php` — plugin header (primary source of truth)
 2. `package.json` — `version` field
+3. `readme.txt` — `Stable tag`
 
 Changelog is manually maintained in `changelog.txt` and `readme.txt`.
 
