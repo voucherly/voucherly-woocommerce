@@ -49,8 +49,8 @@ function voucherly_init()
     }
 
     // Registers WooCommerce Blocks integration.
-    add_action('woocommerce_blocks_loaded', 'woocommerce_gateway_voucherly_woocommerce_block_support');
-    function woocommerce_gateway_voucherly_woocommerce_block_support()
+    add_action('woocommerce_blocks_loaded', 'voucherly_woocommerce_block_support');
+    function voucherly_woocommerce_block_support()
     {
         if (class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
             require_once 'includes/blocks/voucherly-blocks.php';
