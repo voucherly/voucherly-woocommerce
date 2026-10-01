@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: PHP ${{ matrix.php }} lint
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Lowest supported version and latest version.
+        php: ['7.4', '8.4']
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+
+      - name: Lint
+        run: find . -path ./vendor -prune -o -path ./node_modules -prune -o -name '*.php' -print0 | xargs -0 -n1 php -l > /dev/null
+
+  format:
+    name: Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          tools: composer
+
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress
+
+      - name: php-cs-fixer
+        run: vendor/bin/php-cs-fixer fix --dry-run --diff
+
+  plugin-check:
+    name: Plugin Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          tools: composer
+
+      # The Docker environment mounts this folder, so it holds what WordPress.org receives: production dependencies and the built blocks script.
+      - name: Install production PHP dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction --no-progress
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: Build blocks checkout script
+        run: |
+          npm install --no-audit --no-fund
+          npm run build
+
+      - name: Start WordPress
+        run: npm run env:start
+
+      # The same check as npm run plugin-check on a developer machine: anything but its success line fails the job.
+      - name: Plugin Check
+        run: |
+          npm run --silent plugin-check | tee plugin-check.log
+          grep -q '^Success:' plugin-check.log

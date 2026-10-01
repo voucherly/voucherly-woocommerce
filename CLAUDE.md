@@ -34,7 +34,11 @@ npm run env:destroy      # Delete containers and data
 
 ## Release
 
-`.github/workflows/deploy.yml` publishes to the WordPress.org SVN repository (slug `voucherly`) with `10up/action-wordpress-plugin-deploy`: pushing a tag `x.y.z` (or `vx.y.z`) syncs `trunk` and creates `tags/x.y.z` in one commit. Files listed in `.distignore` are not published. Running the workflow manually defaults to a dry run. The job fails if the tag, the plugin header version, the readme `Stable tag` and `package.json` disagree. It needs the `SVN_USERNAME` and `SVN_PASSWORD` secrets (the SVN password from the WordPress.org profile, not the account password). Banners and icons live only in the SVN `assets/` folder.
+Releases work as in the Voucherly SDKs. `.github/workflows/ci.yml` checks every pull request and every push to `main`: PHP 7.4 and 8.4 lint, php-cs-fixer, and Plugin Check in the Docker environment.
+
+A release is a pushed tag `vX.Y.Z`. Bump the version and add the `= X.Y.Z =` section to `changelog.txt` and `readme.txt` first (see Version Management). `.github/workflows/release.yml` checks that the tag, the plugin header, the readme `Stable tag`, `package.json` and both changelogs agree, runs the CI, publishes to the WordPress.org SVN repository (slug `voucherly`) with `10up/action-wordpress-plugin-deploy`, which syncs `trunk` and creates `tags/X.Y.Z` in one commit, and then creates the GitHub release with the changelog section as notes and the ZIP. Never create a GitHub release by hand: one only exists once the version is on WordPress.org.
+
+A manual run of the release workflow is a dry run by default. Files listed in `.distignore` are not published. Publishing needs the `SVN_USERNAME` and `SVN_PASSWORD` secrets (the SVN password from the WordPress.org profile, not the account password). Banners and icons live only in the SVN `assets/` folder.
 
 `readme.txt` must be written in English; Italian texts come from translate.wordpress.org.
 
