@@ -80,8 +80,8 @@ final class Voucherly_Blocks extends AbstractPaymentMethodType
     public function get_payment_method_data()
     {
         return [
-            'title' => Voucherly::TITLE,
-            'description' => Voucherly::DESCRIPTION,
+            'title' => $this->get_setting('title') ?: Voucherly::TITLE,
+            'description' => $this->get_setting('description', Voucherly::DESCRIPTION),
             'icon' => Voucherly::plugin_url().'/logo.svg',
             'icons' => $this->get_icons(),
             'supports' => array_merge(Voucherly::SUPPORTS, ['tokenization']),
@@ -92,6 +92,10 @@ final class Voucherly_Blocks extends AbstractPaymentMethodType
 
     private function get_icons()
     {
+        if ('no' === $this->get_setting('showIcons')) {
+            return [];
+        }
+
         return Voucherly::getCheckoutGateways($this->settings['gateways'] ?? null);
     }
 }

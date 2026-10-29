@@ -1,4 +1,10 @@
 == Changelog ==
+= 1.4.0 =
+* Title and description of the payment method can be changed in the settings, for both the classic and the block checkout
+* Option to hide the logos of the payment methods at checkout
+* New "Categories excluded from meal vouchers" setting: products in these categories are always sent as non-food
+* New voucherly_payment_line filter to adjust the order lines sent to Voucherly
+
 = 1.3.0 =
 * Requires WordPress 6.5 or later and PHP 7.4 or later, tested up to WordPress 7.1
 * Update voucherly/voucherly-php-sdk to 2.0.0

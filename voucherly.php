@@ -36,14 +36,15 @@ class voucherly extends WC_Payment_Gateway
         $this->has_fields = false;
         $this->supports = self::SUPPORTS;
 
-        $this->title = self::TITLE;
-        $this->description = self::DESCRIPTION;
         $this->icon = plugins_url('/logo.svg', __FILE__);
 
         $this->view_transaction_url = 'https://dashboard.voucherly.it/pay/payment/details?id=%s';
 
         $this->init_form_fields();
         $this->init_settings();
+
+        $this->title = $this->get_option('title') ?: self::TITLE;
+        $this->description = $this->get_option('description');
 
         add_action('woocommerce_update_options_payment_gateways_'.$this->id, [$this, 'process_admin_options']);
         add_action('woocommerce_api_wc_gateway_'.$this->id, [$this, 'gateway_api']);
@@ -62,10 +63,9 @@ class voucherly extends WC_Payment_Gateway
             'hide_empty' => true,
         ]);
 
-        $options = [];
-        $options[''] = '';
+        $categoryOptions = [];
         foreach ($categories as $category) {
-            $options[$category->term_id] = $category->name;
+            $categoryOptions[$category->term_id] = $category->name;
         }
 
         $this->form_fields = [
@@ -94,12 +94,38 @@ class voucherly extends WC_Payment_Gateway
                 'default' => 'no',
                 'description' => __('Sandbox Mode can be used to test payments.', 'voucherly'),
             ],
+            'title' => [
+                'title' => __('Title', 'voucherly'),
+                'type' => 'text',
+                'default' => self::TITLE,
+                'description' => __('Name of the payment method shown to the customer at checkout.', 'voucherly'),
+            ],
+            'description' => [
+                'title' => __('Description', 'voucherly'),
+                'type' => 'textarea',
+                'default' => self::DESCRIPTION,
+                'description' => __('Text shown to the customer at checkout when the payment method is selected.', 'voucherly'),
+            ],
+            'showIcons' => [
+                'title' => __('Payment method logos', 'voucherly'),
+                'label' => __('Show the logos of the payment methods at checkout', 'voucherly'),
+                'type' => 'checkbox',
+                'default' => 'yes',
+            ],
             'foodCategory' => [
                 'title' => __('Category for food products', 'voucherly'),
                 'type' => 'select',
                 'default' => '',
-                'options' => $options,
+                'options' => ['' => ''] + $categoryOptions,
                 'description' => __('Select the category that determines whether a product qualifies as food (eligible for meal voucher payment). If no category is selected, all products will be considered food.', 'voucherly'),
+            ],
+            'nonFoodCategories' => [
+                'title' => __('Categories excluded from meal vouchers', 'voucherly'),
+                'type' => 'multiselect',
+                'class' => 'wc-enhanced-select',
+                'default' => [],
+                'options' => $categoryOptions,
+                'description' => __('Products in these categories are never considered food, even when they also belong to the category for food products.', 'voucherly'),
             ],
             'shippingAsFood' => [
                 'title' => __('Shipping as food', 'voucherly'),
@@ -464,6 +490,10 @@ class voucherly extends WC_Payment_Gateway
      */
     public function get_icon()
     {
+        if ('no' === $this->get_option('showIcons')) {
+            return '';
+        }
+
         $gateways = self::getCheckoutGateways($this->get_option('gateways'));
         if (empty($gateways)) {
             return '';
@@ -934,8 +964,6 @@ class voucherly extends WC_Payment_Gateway
     {
         $lines = [];
 
-        $foodCategoryId = $this->get_option('foodCategory');
-
         foreach (WC()->cart->get_cart() as $key => $item) {
             $product = $item['data'];
 
@@ -954,19 +982,15 @@ class voucherly extends WC_Payment_Gateway
             $line->unitDiscountAmount = $line->unitAmount - $unitDiscountedAmount;
             $line->quantity = $item['quantity'];
 
-            if (isset($foodCategoryId) && !empty($foodCategoryId)) {
-                // The option is a string and the term ids are integers; a variation has no categories of its own, so they are read from the parent product.
-                $isFood = in_array((int) $foodCategoryId, wc_get_product_term_ids($item['product_id'], 'product_cat'), true);
-            } else {
-                $isFood = true;
-            }
-            $lineProduct->lineType = $isFood ? LineType::FOOD : LineType::NON_FOOD;
+            $lineProduct->lineType = $this->isFoodProduct($item['product_id']) ? LineType::FOOD : LineType::NON_FOOD;
 
             $lineProduct->taxRate = $this->calculateTaxRate($item['line_tax'], $item['line_total']);
 
             $line->product = $lineProduct;
 
-            $lines[] = $line;
+            // Anything but a PaymentLineRequest returned by the filter is ignored, so a faulty extension cannot break the payment.
+            $filteredLine = apply_filters('voucherly_payment_line', $line, $item, $order);
+            $lines[] = $filteredLine instanceof PaymentLineRequest ? $filteredLine : $line;
         }
 
         $chosen_shipping_methods = WC()->session->get('chosen_shipping_methods');
@@ -1038,6 +1062,22 @@ class voucherly extends WC_Payment_Gateway
     private function getVoucherlyCustomerUserMetaKey(): string
     {
         return 'voucherly_customer_'.('yes' === $this->get_option('sandbox') ? 'sand' : 'live');
+    }
+
+    private function isFoodProduct(int $productId): bool
+    {
+        // A variation has no categories of its own, so they are read from the parent product.
+        $categoryIds = wc_get_product_term_ids($productId, 'product_cat');
+
+        // The options hold strings and the term ids are integers.
+        $nonFoodCategoryIds = array_map('intval', (array) $this->get_option('nonFoodCategories', []));
+        if (!empty(array_intersect($nonFoodCategoryIds, $categoryIds))) {
+            return false;
+        }
+
+        $foodCategoryId = (int) $this->get_option('foodCategory');
+
+        return 0 === $foodCategoryId || in_array($foodCategoryId, $categoryIds, true);
     }
 
     private function getCustomerPaymentMethodsCacheKey(string $voucherlyCustomerId): string
