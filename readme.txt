@@ -4,7 +4,7 @@ Tags: voucherly, meal vouchers, buoni pasto, welfare, payments
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.3.0
+Stable tag: 1.4.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -52,7 +52,26 @@ This plugin connects to the Voucherly API (https://api.voucherly.it) to process 
 
 The service is provided by Voucherly: [Terms of Service](https://legal.voucherly.it/category/terms-of-service), [Privacy Policy](https://legal.voucherly.it/privacy/privacy-policy).
 
+== Frequently Asked Questions ==
+
+= Can another plugin change the order lines sent to Voucherly? =
+
+Yes, through the `voucherly_payment_line` filter. It receives the `VoucherlyApi\Request\PaymentLineRequest` of each cart item, the cart item and the order, and must return a `PaymentLineRequest`; any other value is ignored. For example, to send a product as non-food:
+
+`add_filter('voucherly_payment_line', function ($line, $item, $order) {
+    if (123 === $item['product_id']) {
+        $line->product->lineType = \VoucherlyApi\Enum\LineType::NON_FOOD;
+    }
+    return $line;
+}, 10, 3);`
+
 == Changelog ==
+= 1.4.0 =
+* Title and description of the payment method can be changed in the settings, for both the classic and the block checkout
+* Option to hide the logos of the payment methods at checkout
+* New "Categories excluded from meal vouchers" setting: products in these categories are always sent as non-food
+* New voucherly_payment_line filter to adjust the order lines sent to Voucherly
+
 = 1.3.0 =
 * Requires WordPress 6.5 or later and PHP 7.4 or later, tested up to WordPress 7.1
 * Update voucherly/voucherly-php-sdk to 2.0.0
